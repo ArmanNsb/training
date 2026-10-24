@@ -1,7 +1,7 @@
 /* Bump SHELL on every deploy so phones pick up the new files */
-const SHELL='gp-shell-v3';
+const SHELL='gp-shell-v3-owner-sync';
 const CDN='gp-cdn-v1';
-const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg'];
+const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg','cloud-config.js'];
 const CDN_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','raw.githubusercontent.com'];
 
 self.addEventListener('install',e=>{

@@ -1,11 +1,14 @@
 /* =====================================================================
-   CONFIG — edit this block when the backend is ready.
+   CONFIG — public cloud settings live in cloud-config.js.
+   The private owner sync code is entered in Settings and saved locally.
    ===================================================================== */
+const CLOUD_CONFIG=window.TRAINING_CLOUD_CONFIG||{};
 const CONFIG={
   server:{
-    enabled:false,   // set to true once the API is live
-    baseUrl:'',      // e.g. 'https://api.yourdomain.com/v1'
-    token:''         // DEV ONLY — anyone can read this file. In production a login flow stores the token in localStorage 'gp.token'.
+    enabled:!!CLOUD_CONFIG.enabled,
+    baseUrl:String(CLOUD_CONFIG.baseUrl||''),
+    publicKey:String(CLOUD_CONFIG.publishableKey||''),
+    token:''
   },
   met:{lifting:5.0,abs:3.8}, // MET values used for calorie estimates
   absMinutes:20,
@@ -267,9 +270,10 @@ const S=Store.S;
 (()=>{const raw=Store.W;Store.W={};for(const k in raw){const c=cleanW(raw[k]);if(c)Store.W[c.id]=c}})();
 
 const Sync={
-  q:[],last:LS.get('gp.lastSync',0),busy:false,timer:0,backoff:0,
-  get on(){return !!(CONFIG.server.enabled&&CONFIG.server.baseUrl)},
-  token(){return LS.get('gp.token','')||CONFIG.server.token},
+  q:[],last:LS.get('gp.lastSync',0),busy:false,timer:0,backoff:0,status:'idle',
+  get configured(){return !!(CONFIG.server.enabled&&/^https:\/\//.test(CONFIG.server.baseUrl)&&!CONFIG.server.baseUrl.includes('YOUR_PROJECT_REF')&&!!CONFIG.server.publicKey&&!CONFIG.server.publicKey.includes('YOUR_SUPABASE_PUBLISHABLE_KEY'))},
+  get on(){return this.configured&&!!this.token()},
+  token(){return LS.get('gp.token','')||''},
   load(){
     const q=LS.get('gp.outbox',[]);let fix=false;
     this.q=(Array.isArray(q)?q:[]).filter(x=>x&&x.key).map((x,k)=>{if(!x.id){x.id='o'+Date.now()+k;fix=true}return x});
@@ -284,15 +288,34 @@ const Sync={
     this.schedule(1200);
   },
   schedule(ms){clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush(),ms)},
-  async req(method,path,body){
-    const t=this.token();
-    const res=await fetch(CONFIG.server.baseUrl.replace(/\/$/,'')+path,{method,headers:Object.assign({'Content-Type':'application/json'},t?{Authorization:'Bearer '+t}:{}),body:body?JSON.stringify(body):undefined});
-    if(!res.ok){const e=new Error('HTTP '+res.status);e.status=res.status;throw e}
+  async req(method,path,body,tokenOverride){
+    const t=tokenOverride||this.token();
+    const headers={'Content-Type':'application/json','apikey':CONFIG.server.publicKey};
+    if(t)headers.Authorization='Bearer '+t;
+    const res=await fetch(CONFIG.server.baseUrl.replace(/\/$/,'')+path,{method,headers,body:body?JSON.stringify(body):undefined});
+    if(!res.ok){let detail='';try{const d=await res.json();detail=d&&d.error?String(d.error):''}catch(e){}const err=new Error(detail||('HTTP '+res.status));err.status=res.status;throw err}
     return res.status===204?null:res.json().catch(()=>null);
+  },
+  async connect(code){
+    if(!this.configured)throw new Error('Cloud setup is incomplete. Check cloud-config.js.');
+    if(!code||!code.trim())throw new Error('Paste your private sync code first.');
+    const candidate=code.trim();
+    // Validate the code before saving it on this device.
+    const data=await this.req('GET','/workouts?since=0',undefined,candidate);
+    if(!data||!Array.isArray(data.workouts))throw new Error('The server response was unexpected.');
+    if(!LS.set('gp.token',candidate))throw new Error('Could not save the code in this browser.');
+    this.status='connected';LS.set('gp.pullSince',0);
+    const pulled=await this.pull(true);
+    if(!pulled){LS.set('gp.token','');throw new Error('The code was accepted, but cloud data could not be downloaded. Check the internet and try again.');}
+    // Merge remote data first, then upload the combined local history. The server
+    // rejects older payload versions so a stale device cannot overwrite newer data.
+    this.seed();
+    await this.flush();
+    return true;
   },
   async flush(){
     if(!this.on||this.busy||!navigator.onLine)return;
-    this.busy=true;
+    this.busy=true;this.status='syncing';
     try{
       for(;;){
         this.q=LS.get('gp.outbox',[]);
@@ -302,39 +325,39 @@ const Sync={
           else if(op.type==='delete')await this.req('DELETE','/workouts/'+encodeURIComponent(op.key));
           else await this.req('PUT','/settings',op.body);
         }catch(e){
-          const s=e.status||0;
-          if(!(s>=400&&s<500&&![401,408,429].includes(s)))throw e; // network/5xx/auth: retry later
-          console.error('Sync: server rejected',op.type,op.key,'HTTP',s,'— dropped'); // permanent error: don't block the queue
+          // Preserve queued data on every failure; configuration errors must not erase workouts.
+          throw e;
         }
         this.q=LS.get('gp.outbox',[]).filter(x=>x.id!==op.id); // remove by id, never by position
         if(!LS.set('gp.outbox',this.q))break;
       }
-      this.backoff=0;this.last=Date.now();LS.set('gp.lastSync',this.last);
+      this.backoff=0;this.last=Date.now();LS.set('gp.lastSync',this.last);this.status='connected';
     }catch(e){
       this.backoff=Math.min(300000,(this.backoff||2500)*2);
-      console.warn('Sync failed, retrying in',this.backoff/1000,'s',e);
+      this.status='error';console.warn('Sync failed; queued data is preserved. Retrying in',this.backoff/1000,'s',e);
       this.schedule(this.backoff);
     }finally{this.busy=false}
   },
-  async pull(){
-    if(!this.on||!navigator.onLine)return;
+  async pull(forceAll=false){
+    if(!this.on||!navigator.onLine)return false;
     try{
-      const data=await this.req('GET','/workouts?since='+encodeURIComponent(LS.get('gp.pullSince',0)));
+      const since=forceAll?0:LS.get('gp.pullSince',0);
+      const data=await this.req('GET','/workouts?since='+encodeURIComponent(since));
       const list=Array.isArray(data)?data:(data&&data.workouts)||[];
       let changed=Store.merge(list);
       if(data&&data.settings&&(+data.settings.updatedAt||0)>(S.updatedAt||0)){Object.assign(S,cleanS(Object.assign({},S,data.settings)));LS.set('gp.settings',S);Store.ver++;changed=true}
-      /* prefer a server-issued cursor; otherwise overlap 5 min to tolerate clock skew (merge is idempotent) */
+      /* Server cursor overlaps by five minutes to tolerate clock skew. */
       const cursor=data&&(data.cursor!=null?data.cursor:data.serverTime);
       LS.set('gp.pullSince',cursor!=null?cursor:Math.max(0,Date.now()-5*60000));
-      this.last=Date.now();LS.set('gp.lastSync',this.last);
+      this.last=Date.now();LS.set('gp.lastSync',this.last);this.status='connected';
       if(changed){Store.saveW();refreshBase()}
-    }catch(e){console.warn('Pull failed',e)}
+      return true;
+    }catch(e){this.status='error';console.warn('Pull failed',e);return false}
   },
-  seed(){ // first time sync is switched on: upload everything already on this device
-    if(!this.on||LS.get('gp.seeded',false))return;
+  seed(){ // Upload the merged local history after first pulling remote records.
+    if(!this.on)return;
     Object.values(Store.W).forEach(w=>{if(hasActivity(w)||w.deleted)this.queue(w.deleted?'delete':'put',w)});
     this.queue('settings',S);
-    LS.set('gp.seeded',true);
   }
 };
 Sync.load();
@@ -853,7 +876,13 @@ function wSheet(id){
 const stepper=k=>`<div class="stp"><button data-act="step" data-k="${k}" data-d="-15" aria-label="Decrease">${IC.minus}</button><span class="stp-v" aria-live="polite">${fmt(S[k])}</span><button data-act="step" data-k="${k}" data-d="15" aria-label="Increase">${IC.plus}</button></div>`;
 const swHTML=k=>`<button class="sw${S[k]?' on':''}" data-act="toggle" data-k="${k}" role="switch" aria-checked="${!!S[k]}"><i></i></button>`;
 const bwTxt=()=>S.unit==='kg'?`${S.bw.toFixed(1)} kg`:`${Math.round(S.bw*2.20462)} lb`;
-function syncText(){if(!Sync.on)return 'Local only. Server not connected yet.';if(Sync.q.length)return `${Sync.q.length} change${Sync.q.length>1?'s':''} waiting to sync`;return Sync.last?`Synced ${relTime(Sync.last)}`:'Connected'}
+function syncText(){
+  if(!Sync.configured)return 'Cloud setup is not finished yet.';
+  if(!Sync.token())return 'This device is not connected yet.';
+  if(Sync.status==='error')return 'Could not connect — check the sync code or internet.';
+  if(Sync.q.length)return `${Sync.q.length} change${Sync.q.length>1?'s':''} waiting to sync`;
+  return Sync.last?`Last synced ${relTime(Sync.last)}`:'Sync code saved on this device';
+}
 function settingsSheet(){
   const ok='wakeLock' in navigator;
   return `<div class="sx"><div class="sx-pad"><p class="eyebrow">Preferences</p><h2 class="sx-title">Settings</h2>
@@ -864,7 +893,10 @@ function settingsSheet(){
     <div class="srow"><span><b>Isolation rest</b><small>Plan: 60–90 s</small></span>${stepper('restI')}</div>
     <div class="srow"><span><b>Timer sound</b><small>Beep when rest is over</small></span>${swHTML('sound')}</div>
     <div class="srow"><span><b>Keep screen awake</b><small>${ok?'Stops your phone dimming mid-workout':'Not supported in this browser'}</small></span>${swHTML('wake')}</div>
-    <div class="srow"><span><b>Cloud sync</b><small id="syncTxt">${syncText()}</small></span>${Sync.on?`<button class="ghost press sm-btn" data-act="sync">Sync now</button>`:`<span class="badge">${IC.cloud}Soon</span>`}</div>
+    <div class="srow"><span><b>Cloud sync</b><small id="syncTxt">${syncText()}</small></span>${Sync.on?`<button class="ghost press sm-btn" data-act="sync">Sync now</button>`:`<span class="badge">${IC.cloud}${Sync.configured?'Connect':'Setup'}</span>`}</div>
+    <div class="cloud-sync">
+      ${!Sync.configured?`<p><b>Cloud setup needed</b></p><p>Finish the setup in Supabase, then enter the public Project URL and Publishable key in <code>cloud-config.js</code>. Your existing workout data stays on this device.</p>`:!Sync.token()?`<p><b>Connect this device</b></p><p>Enter the same private sync code on your phone and computer. No email or account is needed.</p><label for="syncCode">Private sync code</label><input class="cloud-input" id="syncCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your private sync code" maxlength="200"><button class="btn-primary press cloud-connect" data-act="cloud-connect">Connect this device</button><p class="cloud-msg" id="cloudMsg" aria-live="polite">The code is saved only in this browser. Keep it private.</p>`:`<p><b>Cloud sync is enabled on this device</b></p><p>Workout history stays local too. Disconnecting only removes this device's saved code; it does not delete cloud data.</p><div class="cloud-actions"><button class="ghost press" data-act="sync">${IC.refresh} Sync now</button><button class="ghost press" data-act="cloud-disconnect">Disconnect device</button></div><p class="cloud-msg" id="cloudMsg" aria-live="polite">${Sync.status==='error'?'Connection error. Check the code and internet.':'Use the same code on your other device.'}</p>`}
+    </div>
     <div class="sbtns"><button class="ghost press" data-act="export">${IC.download} Back up</button><button class="ghost press" data-act="import">${IC.upload} Restore</button></div>
     <input type="file" id="importFile" accept="application/json,.json" hidden>
     <button class="danger press" data-act="wipe">${IC.trash} Delete all workout history</button>
@@ -1078,7 +1110,19 @@ root.addEventListener('click',async e=>{
   if(a==='bw'){const step=S.unit==='kg'?.5:.45359237;S.bw=Math.round(Math.min(250,Math.max(30,S.bw+ +el.dataset.d*step))*100)/100;Store.saveS();$('#bwV').textContent=bwTxt();return}
   if(a==='step'){const k=el.dataset.k,lo=k==='restC'?60:30,hi=k==='restC'?300:180;S[k]=Math.min(hi,Math.max(lo,S[k]+ +el.dataset.d));Store.saveS();$('.stp-v',el.parentElement).textContent=fmt(S[k]);return}
   if(a==='toggle'){const k=el.dataset.k;S[k]=!S[k];Store.saveS();el.classList.toggle('on',S[k]);el.setAttribute('aria-checked',S[k]);if(k==='wake')applyWake();if(k==='sound'&&S.sound){unlockAudio();beep()}return}
-  if(a==='sync'){$('#syncTxt').textContent='Syncing…';await Sync.flush();await Sync.pull();const st=$('#syncTxt');if(st)st.textContent=syncText();return}
+  if(a==='cloud-connect'){
+    const input=$('#syncCode',sbody),msg=$('#cloudMsg',sbody),code=input?input.value:'';
+    if(!code.trim()){if(msg)msg.textContent='Paste your private sync code first.';return}
+    el.disabled=true;el.textContent='Connecting…';if(msg)msg.textContent='Checking the code and downloading your cloud data…';
+    try{await Sync.connect(code);sbody.innerHTML=settingsSheet();toast('Cloud sync connected on this device');}
+    catch(err){Sync.status='error';if(msg)msg.textContent=String(err&&err.message||'Could not connect. Check the code and internet.').slice(0,220);el.disabled=false;el.textContent='Try again';}
+    return;
+  }
+  if(a==='cloud-disconnect'){
+    if(!(await ask('Disconnect cloud sync on this device? Your local and cloud workout data will not be deleted.','Disconnect')))return;
+    LS.set('gp.token','');Sync.status='idle';sbody.innerHTML=settingsSheet();toast('This device disconnected; workout data kept');return;
+  }
+  if(a==='sync'){$('#syncTxt').textContent='Syncing…';const ok=await Sync.pull();if(ok)await Sync.flush();const st=$('#syncTxt');if(st)st.textContent=syncText();const m=$('#cloudMsg',sbody);if(m)m.textContent=ok?'Sync check completed.':'Could not sync; check the code and internet.';return}
   if(a==='export')return exportData();
   if(a==='import')return $('#importFile',sbody).click();
   if(a==='savedur'){
@@ -1284,8 +1328,8 @@ stack.push(H());
 route();
 applyWake();
 (()=>{const st=LS.get('gp.timer',null);if(st&&+st.end>Date.now()+500)runTimer(+st.end,+st.dur||1,String(st.label||'Rest'),st.src);else LS.set('gp.timer',null)})();
-Sync.seed();
-Sync.flush();
-Sync.pull();
+if(Sync.on){
+  Sync.pull().then(ok=>{if(ok)Sync.flush()});
+}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW registration failed',e)));
 window.GymApp={Store,Sync,CONFIG};

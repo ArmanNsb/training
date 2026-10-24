@@ -445,3 +445,16 @@ body.lock .timer{bottom:calc(92px + var(--sb))}
 .dlg-ok{background:var(--ac);color:var(--ac-ink)}
 .dlg-ok.dz{background:var(--red);color:#1a0000}
 .first-log b{color:var(--tx);font-weight:600}
+
+/* Single-owner cloud sync */
+.cloud-sync{margin-top:14px;padding:14px;background:var(--s2);border:1px solid var(--line);border-radius:16px}
+.cloud-sync p{font-size:13px;line-height:1.5;color:var(--mu);margin:0 0 9px}
+.cloud-sync p b{font-size:14px;color:var(--tx)}
+.cloud-sync label{display:block;font-size:12px;font-weight:600;color:var(--di);margin:12px 0 6px}
+.cloud-input{display:block;width:100%;height:48px;padding:0 13px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--tx);outline:none;font:inherit;font-size:14px}
+.cloud-input:focus{border-color:var(--ac)}
+.cloud-input::placeholder{color:var(--di)}
+.cloud-sync .cloud-connect{margin-top:10px;justify-content:center}
+.cloud-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cloud-actions .ghost{min-width:0;padding:0 8px;font-size:12px}
+.cloud-msg{font-size:12px!important;color:var(--di)!important;margin-top:10px!important;margin-bottom:0!important;overflow-wrap:anywhere}

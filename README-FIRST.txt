@@ -1,10 +1,13 @@
-TRAINING — GITHUB PAGES PACKAGE
+TRAINING — ONE-OWNER CLOUD SYNC (NO WEBSITE ACCOUNT)
 
-Upload ALL files in this folder to the ROOT of your GitHub repository.
-Do not upload this folder itself as a nested folder.
+This ZIP is configured for https://armannsb.github.io/training/ and the Supabase project already created.
 
-The entry file must be named index.html. Keep these files together:
-index.html, style.css, app.js, manifest.webmanifest, sw.js, icon.svg,
-icon-180.png, icon-192.png, icon-512.png, icon-512-maskable.png, .nojekyll
+BEFORE UPLOADING:
+1. Add a Supabase secret API key named exactly training_sync in Project Settings → API Keys. Keep its sb_secret value private.
+2. Make sure Edge Function Secrets OWNER_SYNC_KEY is a private random code at least 32 characters long, and ALLOWED_ORIGIN is exactly https://armannsb.github.io.
+3. Back up current workouts from Settings → Back up before first sync.
 
-This package publishes the current app as a static website/PWA. It does NOT add cloud backup or cross-device sync; current workout data remains local to each browser/device.
+UPLOAD:
+Extract this ZIP, open the Training-Owner-Sync folder, and upload its contents to the root of the existing GitHub repository. Do not upload the ZIP itself or the parent folder.
+
+NEVER put OWNER_SYNC_KEY or any sb_secret/service_role key in GitHub or browser files. The included cloud-config.js contains only the public Project URL and Publishable key.
