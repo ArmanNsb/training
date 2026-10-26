@@ -363,6 +363,50 @@ body.timing main{padding-bottom:calc(168px + var(--sb))}
 .nav-btn.go{background:var(--ac);color:var(--ac-ink)}
 .nav-btn.go small,.nav-btn.go svg{color:var(--ac-ink)}
 
+
+/* Equipment alternatives + machine guides */
+.equip-options{margin:0 0 22px}
+.equip-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+.equip-title .h3{margin:0}
+.equip-title span{display:block;color:var(--di);font-size:12px;margin-top:2px}
+.alt-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.alt-card{position:relative;padding:13px 14px;border-radius:16px;background:var(--s2);border:1px solid var(--line);min-width:0}
+.alt-card.primary{border-color:var(--ac-line);background:var(--ac-soft)}
+.alt-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.alt-top>span{font-size:10.5px;font-weight:700;letter-spacing:.055em;text-transform:uppercase;color:var(--di)}
+.alt-card.primary .alt-top>span{color:var(--ac)}
+.alt-top b{font-size:9.5px;line-height:1;padding:4px 6px;border-radius:99px;background:var(--ac);color:var(--ac-ink);letter-spacing:.04em}
+.alt-card strong{display:block;font-size:14.5px;line-height:1.25;font-weight:650}
+.alt-card em{display:block;font-style:normal;color:var(--mu);font-size:12.5px;margin-top:2px;text-align:left;direction:rtl;unicode-bidi:plaintext}
+.alt-card small{display:block;color:var(--di);font-size:11.5px;margin-top:6px}
+.alt-card p{color:var(--mu);font-size:12.5px;line-height:1.45;margin-top:5px}
+.alt-rule{display:flex;gap:9px;align-items:flex-start;color:var(--mu);font-size:12.5px;line-height:1.45;margin:10px 2px 0}
+.alt-rule svg{flex:none;width:16px;height:16px;color:var(--ac);margin-top:2px}
+.alt-rule b{color:var(--tx);font-weight:600}
+.machine-help{margin:0 0 22px;border:1px solid var(--line);border-radius:16px;background:var(--s2);overflow:hidden}
+.machine-help summary{list-style:none}
+.machine-help summary::-webkit-details-marker{display:none}
+.machine-summary{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;user-select:none}
+.machine-ic{flex:none;width:34px;height:34px;border-radius:10px;background:var(--ac-soft);color:var(--ac);display:grid;place-items:center}
+.machine-ic svg{width:18px;height:18px}
+.machine-name{flex:1;min-width:0}
+.machine-name small{display:block;color:var(--di);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.machine-name b{display:block;font-size:14.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.machine-name em{display:block;font-style:normal;color:var(--mu);font-size:12.5px;text-align:left;direction:rtl;unicode-bidi:plaintext}
+.machine-arrow{flex:none;color:var(--di);transition:transform .3s var(--ease)}
+.machine-arrow svg{width:18px;height:18px}
+.machine-help[open] .machine-arrow{transform:rotate(90deg)}
+.machine-panel{border-top:1px solid var(--line);padding:14px}
+.machine-about{color:var(--mu);font-size:13.5px;line-height:1.7;text-align:right;margin-bottom:14px}
+.machine-steps{list-style:none;counter-reset:mg;display:grid;gap:10px;margin-bottom:14px}
+.machine-steps li{counter-increment:mg;display:grid;grid-template-columns:1fr 26px;gap:10px;color:#d9d9de;font-size:13.5px;line-height:1.65;text-align:right}
+.machine-steps li::after{content:counter(mg);grid-column:2;grid-row:1;width:26px;height:26px;border-radius:99px;background:var(--s3);color:var(--ac);display:grid;place-items:center;font-size:12px;font-weight:700}
+.machine-check{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:var(--ac-soft);color:var(--mu);font-size:13px;line-height:1.65}
+.machine-check svg{flex:none;width:17px;height:17px;color:var(--ac);margin-top:3px}
+.machine-check span{flex:1;text-align:right}
+.technique-h3{margin-top:2px}
+@media(min-width:520px){.alt-grid{grid-template-columns:repeat(3,1fr)}.alt-card{padding:12px}.alt-card strong{font-size:13.5px}.alt-card p{font-size:12px}}
+
 /* Workout summary */
 .wx-list{display:grid}
 .wx{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
