@@ -193,18 +193,110 @@ const EXTRAS={
   seatedCalf:{fa:'ساق پا نشسته',guide:'seatedCalf',machine:{name:'Standing Calf Raise Machine',fa:'دستگاه ساق پا ایستاده',equipment:'Standing calf raise machine',cue:'This shifts some emphasis toward gastrocnemius but still trains the calves well.'},free:{name:'Single-Leg Calf Raise',fa:'ساق تک پا',equipment:'Bodyweight or one dumbbell',cue:'Use a step for range of motion and add a dumbbell when needed.'}}
 };
 
-function equipmentOptionsHTML(exId,it){
-  const x=EXTRAS[exId];if(!x)return '';
-  const ex=EX[exId],a=x.machine,b=x.free;
-  const card=(k,label,name,fa,equipment,cue)=>`<div class="alt-card ${k}"><div class="alt-top"><span>${label}</span>${k==='primary'?'<b>PROGRAMMED</b>':''}</div><strong>${name}</strong><em dir="rtl">${fa}</em><small>${equipment}</small><p>${cue}</p></div>`;
-  return `<div class="equip-options"><div class="equip-title"><div><p class="h3">Equipment options</p><span>Same target, different setup</span></div></div><div class="alt-grid">
-    ${card('primary','Option 1 · Primary',ex.name,x.fa,'Current programmed setup','Use this whenever the equipment is available so your progress is easiest to compare.')}
-    ${card('machine','Option 2 · Machine alternative',a.name,a.fa,a.equipment,a.cue)}
-    ${card('free','Option 3 · Free-weight fallback',b.name,b.fa,b.equipment,b.cue)}
-  </div><p class="alt-rule">${IC.info}<span>Keep the programmed <b>${it.sets} sets × ${repsTxt(it)} reps</b>. Start a little lighter the first time you use a substitute. Loads from different versions are not directly comparable.</span></p></div>`;
+
+const VARIANT_KEYS=['primary','machine','free'];
+const VARIANT_META={
+  primary:{label:'Primary',short:'Primary',sub:'Programmed'},
+  machine:{label:'Machine alternative',short:'Machine',sub:'Alternate machine'},
+  free:{label:'Free-weight fallback',short:'Free weight',sub:'Dumbbell / barbell / bodyweight'}
+};
+
+Object.assign(MACHINE_GUIDES,{
+  inclineChestPress:{en:'Incline Chest Press Machine',fa:'دستگاه پرس بالا سینه',about:'صندلی و پشتی شیب‌دار دارد و دسته‌ها در مسیر مایل رو به بالا حرکت می‌کنند؛ هدف اصلی بخش بالایی سینه است.',setup:['صندلی را طوری تنظیم کن که دسته‌ها تقریباً هم‌سطح بالای سینه باشند.','کتف‌ها را به پشتی بچسبان و پاها را محکم روی زمین بگذار.','نقطه شروع را آن‌قدر عقب نبر که جلوی شانه کشش تیز یا ناراحت‌کننده بگیرد.'],check:'در تمام تکرارها مسیر دسته‌ها باید به سمت بالای سینه باشد و شانه‌ها از پشتی جدا نشوند.'},
+  seatedRowMachine:{en:'Seated Row Machine',fa:'دستگاه قایقی نشسته',about:'صندلی و دسته‌های افقی دارد و معمولاً بدون کابل آزاد، روی یک مسیر ثابت یا نیمه‌آزاد کار می‌کند.',setup:['ارتفاع صندلی را طوری تنظیم کن که دسته‌ها مقابل پایین سینه یا دنده‌ها قرار بگیرند.','اگر پد سینه دارد، سینه را کامل روی آن نگه دار.','دسته خنثی یا متوسط را انتخاب کن و در شروع اجازه بده دست‌ها کامل کشیده شوند.'],check:'اگر برای کشیدن دسته‌ها مجبور می‌شوی تنه را عقب پرت کنی، وزنه زیاد است.'},
+  lateralRaiseMachine:{en:'Lateral Raise Machine',fa:'دستگاه نشر جانب',about:'پدها معمولاً روی بیرون بازو یا نزدیک آرنج قرار می‌گیرند و حرکت بازوها را به طرفین هدایت می‌کنند.',setup:['صندلی را طوری تنظیم کن که محور شانه تقریباً با محور دستگاه هم‌سطح باشد.','پدها را کمی بالاتر از آرنج قرار بده و آرنج‌ها را نرم نگه دار.','از پایین حرکت بدون بالا انداختن شانه‌ها شروع کن.'],check:'بازوها را فقط تا حدود ارتفاع شانه بالا ببر؛ شراگ کردن یعنی وزنه بیش از حد سنگین است.'},
+  tricepsPressMachine:{en:'Dip / Triceps Press Machine',fa:'دستگاه دیپ یا پرس پشت بازو',about:'در حالت نشسته دسته‌ها را به سمت پایین فشار می‌دهی و بخش عمده کار روی پشت بازو است.',setup:['صندلی را طوری تنظیم کن که آرنج‌ها در شروع حدود ۹۰ درجه باشند.','سینه را بالا و شانه‌ها را پایین نگه دار و دسته‌ها را محکم بگیر.','اگر کمربند یا پد نگهدارنده دارد، آن را طوری ببند که لگن از صندلی بلند نشود.'],check:'برای تأکید بیشتر روی پشت بازو، آرنج‌ها را نزدیک بدن نگه دار و با شانه فشار نده.'},
+  bicepsCurlMachine:{en:'Biceps Curl Machine',fa:'دستگاه جلو بازو',about:'بازوها روی پد قرار می‌گیرند و محور دستگاه نزدیک آرنج است تا حرکت شانه محدود شود.',setup:['ارتفاع صندلی را طوری تنظیم کن که آرنج‌ها با محور چرخش دستگاه هم‌راستا باشند.','پشت بازو را کامل روی پد نگه دار و مچ را خنثی نگه دار.','دامنه را از نزدیک صاف شدن آرنج تا انقباض کامل ولی بدون جمع شدن شانه انجام بده.'],check:'اگر شانه‌ها از پد جدا می‌شوند یا بدن عقب می‌رود، وزنه را کم کن.'},
+  smithRdl:{en:'Smith Machine',fa:'دستگاه اسمیت',about:'میله روی ریل ثابت حرکت می‌کند و برای RDL امکان کنترل مسیر و تمرکز روی هیپ‌هینج را می‌دهد.',setup:['پاها را کمی جلوتر از خط میله قرار بده تا میله هنگام پایین رفتن نزدیک ران و ساق بماند.','زانوها را کمی خم و زاویه‌شان را تقریباً ثابت نگه دار.','قبل از شروع، قفل‌های ایمنی را در ارتفاع مناسب تنظیم کن.'],check:'حرکت باید از عقب بردن لگن بیاید؛ اگر زانو زیاد خم می‌شود، حرکت دارد شبیه اسکوات می‌شود.'},
+  singleLegPress:{en:'Leg Press Machine',fa:'دستگاه پرس پا تک پا',about:'همان دستگاه پرس پا است اما یک پا در مرکز صفحه قرار می‌گیرد و هر سمت جدا تمرین می‌شود.',setup:['یک پا را تقریباً وسط صفحه بگذار و پای دیگر را از مسیر حرکت خارج نگه دار.','لگن و کمر را کامل روی پشتی نگه دار.','دامنه را تا جایی پایین بیاور که لگن نچرخد و کمر گرد نشود.'],check:'زانو باید در راستای پنجه همان پا حرکت کند؛ اگر لگن می‌چرخد دامنه را کمتر کن.'},
+  legPressCalf:{en:'Leg Press Machine',fa:'پرس پا برای ساق',about:'روی دستگاه پرس پا فقط پنجه‌ها روی لبه صفحه قرار می‌گیرند و حرکت از مچ پا انجام می‌شود.',setup:['پاها را تقریباً عرض لگن بگذار و فقط سینه پا را روی لبه پایین صفحه قرار بده.','زانوها را صاف ولی قفل‌نشده نگه دار.','قبل از شروع مطمئن شو صفحه در وضعیت ایمن و کنترل‌شده است.'],check:'پاشنه را پایین ببر تا کشش ساق حس شود و سپس تا آخرین دامنه روی پنجه فشار بده؛ زانو نباید پمپ کند.'},
+  tricepsExtensionMachine:{en:'Triceps Extension Machine',fa:'دستگاه پشت بازو نشسته',about:'بازوها روی پد یا تکیه‌گاه قرار می‌گیرند و با صاف کردن آرنج، پشت بازو کار می‌کند.',setup:['ارتفاع صندلی را طوری تنظیم کن که آرنج‌ها راحت روی پد یا نزدیک محور دستگاه قرار بگیرند.','شانه‌ها را پایین نگه دار و تنه را ثابت کن.','دامنه شروع را طوری انتخاب کن که کشش پشت بازو بدون فشار ناخوشایند به آرنج باشد.'],check:'فقط آرنج باز و بسته شود؛ اگر شانه یا تنه حرکت می‌کند وزنه زیاد است.'},
+  gluteDrive:{en:'Glute Drive / Hip Thrust Machine',fa:'دستگاه گلوت درایو / هیپ تراست',about:'پد یا کمربند روی لگن قرار می‌گیرد و مسیر دستگاه برای اکستنشن مفصل ران طراحی شده است.',setup:['پشت بالایی را روی پد قرار بده و پاها را طوری تنظیم کن که در بالای حرکت ساق‌ها تقریباً عمودی باشند.','پد یا کمربند را روی قسمت استخوانی لگن محکم کن، نه روی شکم.','چانه را کمی جمع و دنده‌ها را پایین نگه دار.'],check:'بالای حرکت بدن باید تقریباً خط صاف بسازد؛ با قوس زیاد کمر دامنه اضافه نگیر.'},
+  backExtensionMachine:{en:'Back Extension Machine',fa:'دستگاه اکستنشن کمر / فیله',about:'در حالت نشسته یا نیمه‌نشسته، پد پشت تنه قرار می‌گیرد و با باز کردن مفصل ران و تنه به عقب فشار می‌دهی.',setup:['محور دستگاه را نزدیک مفصل لگن یا مطابق راهنمای دستگاه تنظیم کن.','پد را روی قسمت بالایی پشت قرار بده و پاها را محکم روی تکیه‌گاه بگذار.','با دامنه کوتاه و سبک شروع کن تا مسیر دستگاه را پیدا کنی.'],check:'در انتهای حرکت از خط صاف بدن عبور نکن و کمر را بیش از حد به عقب خم نکن.'}
+});
+
+const ALT_DETAILS={
+  inclineSmith:{
+    machine:{guide:'inclineChestPress',img:['Leverage_Incline_Chest_Press','Machine_Bench_Press'],yt:'incline chest press machine proper form',steps:['Set the seat so the handles start around upper-chest level.','Pin your upper back to the pad and press the handles up and slightly forward.','Lower under control until you feel a chest stretch without the shoulders rolling forward.'],tips:['Keep your shoulder blades supported throughout.','Use the same 30–45° upper-chest pressing intent as the primary movement.']},
+    free:{img:['Incline_Dumbbell_Press','Dumbbell_Bench_Press'],yt:'incline dumbbell press proper form',steps:['Set an adjustable bench to about 30°.','Kick the dumbbells into position, retract the shoulder blades and plant your feet.','Lower the dumbbells to the upper-chest line, then press up and slightly inward.'],tips:['Keep elbows roughly 45–60° from your torso.','Control the bottom stretch; do not bounce.']}
+  },
+  chestRow:{
+    machine:{guide:'seatedRowMachine',img:['Seated_Cable_Rows','Lying_T-Bar_Row'],yt:'seated row machine proper form',steps:['Adjust the seat so the handles line up with your lower ribs.','Keep your chest against the pad if the machine has one.','Pull the elbows back, pause briefly, then return to a full stretch.'],tips:['Do not turn it into a torso swing.','Think elbows toward your back pockets.']},
+    free:{img:['Dumbbell_Incline_Row','Bent_Over_Two-Dumbbell_Row'],yt:'chest supported dumbbell row incline bench form',steps:['Set an incline bench around 30–45° and lie chest-down.','Let both dumbbells hang with the shoulders relaxed.','Row toward the lower ribs, pause, then lower to a full stretch.'],tips:['Keep the chest glued to the bench.','Do not shrug the shoulders toward the ears.']}
+  },
+  latPulldown:{machine:{reuse:'pullUp',guide:'assistedPullup',assist:true,loadMode:'assist',yt:'assisted pull up machine proper form'},free:{reuse:'pullUp',guide:null,loadMode:'bodyweight',assist:false,yt:'bodyweight pull up proper form'}},
+  machineChest:{machine:{reuse:'machineChest',guide:'chestPress',img:['Leverage_Chest_Press','Machine_Bench_Press'],yt:'plate loaded chest press proper form'},free:{reuse:'dbBench',guide:null,yt:'flat dumbbell bench press proper form'}},
+  cableLateral:{
+    machine:{guide:'lateralRaiseMachine',img:['Seated_Side_Lateral_Raise','Side_Lateral_Raise'],yt:'lateral raise machine proper form',steps:['Adjust the seat so your shoulders line up naturally with the machine.','Place the pads near the outside of the elbows and keep a soft elbow bend.','Raise to about shoulder height, then lower slowly.'],tips:['Keep the traps relaxed.','Use a load you can move without momentum.']},
+    free:{img:['Side_Lateral_Raise','One-Arm_Incline_Lateral_Raise'],yt:'dumbbell lateral raise proper form',steps:['Stand tall with light dumbbells at your sides.','Keep a small fixed elbow bend and raise the arms out to the sides.','Stop around shoulder height and lower slowly.'],tips:['Lead with the elbows, not the hands.','No swinging or shrugging.']}
+  },
+  reversePecDeck:{machine:{reuse:'rearDeltFly',guide:'rearDeltCable',yt:'cable rear delt fly proper form'},free:{img:['Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench','Dumbbell_Lying_Rear_Lateral_Raise'],yt:'bent over dumbbell rear delt fly proper form',steps:['Hinge forward with a flat, stable torso.','Hold light dumbbells with soft elbows and raise the arms out wide.','Stop when the upper arms are roughly in line with the torso, then lower slowly.'],tips:['Do not row the dumbbells toward the ribs.','Keep the neck relaxed and movement smooth.']}},
+  ropePushdown:{
+    machine:{guide:'tricepsPressMachine',img:['Dip_Machine','Triceps_Pushdown'],yt:'dip machine triceps proper form',steps:['Sit securely and grip the handles with elbows close to your sides.','Press the handles down by straightening the elbows.','Return under control until the elbows are comfortably bent.'],tips:['Keep the shoulders down and torso stable.','Finish with the triceps, not a bodyweight shove.']},
+    free:{img:['Decline_Dumbbell_Triceps_Extension','Standing_Dumbbell_Triceps_Extension'],yt:'dumbbell skull crusher proper form',steps:['Lie on a bench with dumbbells over the shoulders.','Keep the upper arms mostly fixed and bend the elbows to lower the dumbbells beside the head.','Extend the elbows to return without letting them flare wide.'],tips:['Use a light-to-moderate load and slow lowering.','Stop if the elbows feel pinched or painful.']}
+  },
+  inclineCurl:{
+    machine:{guide:'bicepsCurlMachine',img:['Machine_Preacher_Curls','Preacher_Curl'],yt:'biceps curl machine proper form',steps:['Adjust the seat so the elbows align with the machine pivot.','Keep the upper arms supported and curl through a comfortable range.','Lower slowly until the elbows are nearly straight.'],tips:['Do not lift the shoulders off the pad.','Keep the wrist stacked with the forearm.']},
+    free:{img:['Seated_Dumbbell_Curl','Alternate_Hammer_Curl'],yt:'standing dumbbell curl proper form',steps:['Stand tall with dumbbells at your sides and palms forward.','Keep the elbows close to the torso and curl without swinging.','Squeeze briefly at the top and lower fully under control.'],tips:['Only the forearms should move.','Use less weight if the torso starts rocking.']}
+  },
+  hackSquat:{machine:{reuse:'legPress',guide:'legPress',yt:'45 degree leg press proper form'},free:{img:['Goblet_Squat','Dumbbell_Squat'],yt:'goblet squat proper form',steps:['Hold one dumbbell vertically at chest height.','Sit down between the hips while the knees track over the toes.','Keep the whole foot down and stand by driving through the floor.'],tips:['Stay as upright as your structure comfortably allows.','Choose a depth you can control without the heels lifting.']}},
+  rdl:{
+    machine:{reuse:'rdl',guide:'smithRdl',img:['Smith_Machine_Stiff-Legged_Deadlift','Romanian_Deadlift'],yt:'smith machine romanian deadlift proper form'},
+    free:{reuse:'rdl',guide:null,img:['Stiff-Legged_Dumbbell_Deadlift','Romanian_Deadlift'],yt:'dumbbell romanian deadlift proper form',steps:['Stand with dumbbells in front of the thighs, knees softly bent.','Push the hips back and slide the dumbbells close to the legs.','Stop at a strong hamstring stretch, then drive the hips forward to stand.'],tips:['Keep the dumbbells close to your body.','The knee angle should change very little.']}
+  },
+  bulgarian:{
+    machine:{guide:'singleLegPress',img:['Leg_Press','Single-Leg_High_Box_Squat'],yt:'single leg press proper form',side:true,steps:['Place one foot near the center of the platform and keep the other leg out of the way.','Lower the platform until the working knee reaches a comfortable depth.','Press through the whole foot without locking the knee.'],tips:['Keep the pelvis square on the seat.','Match the range of motion on both legs.']},
+    free:{img:['Dumbbell_Lunges','Barbell_Reverse_Lunge'],yt:'dumbbell reverse lunge proper form',side:true,steps:['Stand tall with dumbbells at your sides.','Step one leg backward and lower until the front leg reaches a stable depth.','Drive through the front foot to return, then repeat on the same side or alternate.'],tips:['Keep most of the load on the front leg.','A slightly longer step usually feels more glute-dominant.']}
+  },
+  seatedLegCurl:{machine:{reuse:'lyingLegCurl',guide:'lyingLegCurl',yt:'lying leg curl proper form'},free:{img:['Floor_Glute-Ham_Raise','Single_Leg_Glute_Bridge'],yt:'hamstring walkout bodyweight proper form',loadMode:'bodyweight',steps:['Lie on your back with knees bent and lift the hips into a bridge.','Take small heel steps away from the body while keeping the hips elevated.','Walk the heels back in under control and repeat.'],tips:['Keep the ribs down and hips from sagging.','Shorter steps make the movement easier.']}},
+  standingCalf:{
+    machine:{guide:'legPressCalf',img:['Calf_Press_On_The_Leg_Press_Machine','Calf_Press'],yt:'leg press calf raise proper form',steps:['Place only the balls of the feet on the lower edge of the leg-press platform.','Keep the knees nearly straight and let the heels travel down into a stretch.','Press through the toes as high as possible, then lower slowly.'],tips:['Move only at the ankles.','Pause briefly in the stretched position.']},
+    free:{img:['Standing_Dumbbell_Calf_Raise','Standing_Calf_Raises'],yt:'single leg calf raise dumbbell proper form',loadMode:'bodyweight',side:true,steps:['Stand on one leg with the ball of the foot on a step or plate edge.','Lower the heel into a deep controlled stretch.','Rise as high as possible onto the toes; hold a dumbbell when bodyweight becomes easy.'],tips:['Use support for balance if needed.','Do not bounce through the bottom.']}
+  },
+  pullUp:{machine:{reuse:'latPulldown',guide:'latPulldown',yt:'neutral grip lat pulldown proper form'},free:{reuse:'pullUp',guide:null,loadMode:'bodyweight',assist:false,yt:'bodyweight pull up negative pull up proper form'}},
+  dbBench:{machine:{reuse:'machineChest',guide:'chestPress',yt:'machine chest press proper form'},free:{img:['Barbell_Bench_Press_-_Medium_Grip','Barbell_Bench_Press'],yt:'barbell bench press proper form',steps:['Lie on a flat bench with eyes under the bar and feet planted.','Retract the shoulder blades, unrack and lower the bar to the mid-to-lower chest.','Press the bar up while keeping the upper back tight.'],tips:['Keep wrists stacked over forearms.','Use safeties or a spotter when lifting heavy.']}},
+  seatedRow:{machine:{reuse:'chestRow',guide:'chestRow',yt:'chest supported row machine proper form'},free:{img:['One-Arm_Dumbbell_Row','Dumbbell_Incline_Row'],yt:'one arm dumbbell row proper form',side:true,steps:['Support one hand and knee on a bench and hold a dumbbell in the free hand.','Let the shoulder reach forward slightly, then row the elbow toward the hip.','Pause briefly and lower to a full controlled stretch.'],tips:['Keep the torso square to the floor.','Do not twist to finish the rep.']}},
+  machineShoulder:{machine:{reuse:'machineShoulder',guide:'shoulderPress',img:['Leverage_Shoulder_Press','Machine_Shoulder_Military_Press'],yt:'plate loaded shoulder press proper form'},free:{img:['Dumbbell_Shoulder_Press','Seated_Dumbbell_Press'],yt:'seated dumbbell shoulder press proper form',steps:['Sit on a bench with back support and bring dumbbells to shoulder level.','Keep wrists over elbows and press overhead.','Lower until the elbows are around or slightly below shoulder height.'],tips:['Keep the ribs down and back supported.','Do not force an excessively deep bottom position.']}},
+  lowHighFly:{
+    machine:{guide:'inclineChestPress',img:['Leverage_Incline_Chest_Press','Machine_Bench_Press'],yt:'incline chest press machine proper form',steps:['Set the seat so the handles begin near the upper chest.','Keep shoulder blades against the pad and press upward in the machine path.','Return slowly to a comfortable chest stretch.'],tips:['Think upper chest, not shoulders.','Do not let the shoulders roll forward at the finish.']},
+    free:{img:['Incline_Dumbbell_Flyes','Incline_Dumbbell_Flyes_-_With_A_Twist'],yt:'incline dumbbell fly proper form',steps:['Set a bench to a low incline and hold light dumbbells above the chest.','Keep a soft fixed elbow bend and open the arms in a wide arc.','Stop at a controlled chest stretch and bring the dumbbells back together.'],tips:['This is a fly, not a press; keep the elbow angle nearly fixed.','Use lighter weight than your pressing movements.']}
+  },
+  rearDeltFly:{machine:{reuse:'reversePecDeck',guide:'reversePecDeck',yt:'reverse pec deck rear delt fly proper form'},free:{img:['Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench','Dumbbell_Lying_Rear_Lateral_Raise'],yt:'bent over dumbbell rear delt fly proper form',steps:['Hinge forward and brace the torso.','With soft elbows, sweep the dumbbells out to the sides.','Lower slowly without turning the movement into a row.'],tips:['Use light weight and keep the neck relaxed.','Think about moving the upper arms outward.']}},
+  overheadExt:{
+    machine:{guide:'tricepsExtensionMachine',img:['Machine_Triceps_Extension','Dip_Machine'],yt:'machine triceps extension proper form',steps:['Adjust the seat and elbow support so the arms feel stable.','Extend the elbows until the arms are nearly straight.','Return slowly to a comfortable stretch without letting the shoulders move.'],tips:['Keep the upper arms fixed.','Use a pain-free elbow range.']},
+    free:{img:['Standing_Dumbbell_Triceps_Extension','Standing_One-Arm_Dumbbell_Triceps_Extension'],yt:'one dumbbell overhead triceps extension proper form',steps:['Hold one dumbbell with both hands above the head.','Keep the upper arms near the ears and bend the elbows to lower the dumbbell behind the head.','Extend the elbows to return overhead.'],tips:['Keep the ribs down and avoid flaring the elbows excessively.','Use a load that allows a deep controlled stretch.']}
+  },
+  preacherCurl:{machine:{reuse:'preacherCurl',guide:'preacher',img:['Machine_Preacher_Curls','Preacher_Curl'],yt:'machine preacher curl proper form'},free:{img:['EZ-Bar_Curl','Barbell_Curl'],yt:'standing ez bar curl proper form',steps:['Stand tall holding an EZ-bar with an underhand grip.','Keep the elbows near the sides and curl without leaning back.','Squeeze the biceps, then lower until the arms are nearly straight.'],tips:['Keep the torso still.','Do not throw the elbows forward to finish the rep.']}},
+  hipThrust:{
+    machine:{guide:'gluteDrive',img:['Barbell_Hip_Thrust','Barbell_Glute_Bridge'],yt:'glute drive hip thrust machine proper form',steps:['Set your upper back against the machine pad and secure the hip belt or pad.','Place the feet so the shins are close to vertical at lockout.','Drive the hips up, squeeze the glutes, then lower under control.'],tips:['Keep the chin tucked and ribs down.','Finish with the glutes, not a lower-back arch.']},
+    free:{img:['Barbell_Glute_Bridge','Barbell_Hip_Thrust'],yt:'dumbbell glute bridge proper form',steps:['Lie on the floor with knees bent and place a dumbbell across the hips.','Brace the core and drive through the heels to lift the hips.','Squeeze the glutes at the top, then lower slowly.'],tips:['Keep the ribs down.','Use padding under the dumbbell if needed.']}
+  },
+  legPress:{machine:{reuse:'hackSquat',guide:'hackSquat',yt:'hack squat machine proper form'},free:{img:['Goblet_Squat','Dumbbell_Squat'],yt:'goblet squat proper form',steps:['Hold one dumbbell at the chest and stand around shoulder width.','Squat down while keeping the whole foot planted.','Drive up through the floor while the knees track with the toes.'],tips:['Choose a comfortable stance and depth.','Keep the dumbbell close to the chest.']}},
+  lyingLegCurl:{machine:{reuse:'seatedLegCurl',guide:'seatedLegCurl',yt:'seated leg curl proper form'},free:{img:['Floor_Glute-Ham_Raise','Single_Leg_Glute_Bridge'],yt:'hamstring walkout bodyweight proper form',loadMode:'bodyweight',steps:['Start in a glute bridge with heels near the hips.','Walk the heels away in small steps while keeping the hips elevated.','Walk them back in under control.'],tips:['Keep tension on the hamstrings throughout.','Make the steps shorter if your hips drop.']}},
+  backExt:{
+    machine:{guide:'backExtensionMachine',img:['Hyperextensions_Back_Extensions','Hyperextensions_With_No_Hyperextension_Bench'],yt:'back extension machine glute focus proper form',steps:['Set the machine so the pivot and pads fit your torso comfortably.','Brace the trunk and extend until the body reaches a neutral upright position.','Return slowly without collapsing forward.'],tips:['Do not hyperextend past neutral.','Think hips and glutes rather than throwing the chest backward.']},
+    free:{reuse:'rdl',guide:null,img:['Romanian_Deadlift','Stiff-Legged_Barbell_Deadlift'],yt:'dumbbell romanian deadlift glute hamstring proper form',steps:['Hold dumbbells in front of the thighs with knees softly bent.','Push the hips back and lower the weights close to the legs.','Stand by driving the hips forward and squeezing the glutes.'],tips:['Keep a neutral spine.','Stop when the hamstrings are strongly stretched.']}
+  },
+  seatedCalf:{machine:{reuse:'standingCalf',guide:'standingCalf',yt:'standing calf raise machine proper form'},free:{img:['Standing_Dumbbell_Calf_Raise','Standing_Calf_Raises'],yt:'single leg calf raise proper form',loadMode:'bodyweight',side:true,steps:['Stand on one leg with the ball of the foot on an edge.','Lower the heel under control into a full stretch.','Rise as high as possible; add a dumbbell when bodyweight is easy.'],tips:['Pause briefly at the bottom.','Use a support for balance so the calf does the work.']}}
+};
+
+function variantKey(v){return VARIANT_KEYS.includes(v)?v:'primary'}
+function variantProfile(exId,v='primary'){
+  v=variantKey(v);const base=EX[exId],x=EXTRAS[exId]||{};
+  if(v==='primary')return Object.assign({},base,{variant:'primary',fa:x.fa||'',equipment:'Programmed setup',guide:x.guide||null,loadMode:base.assist?'assist':'external'});
+  const a=x[v]||{},d=(ALT_DETAILS[exId]&&ALT_DETAILS[exId][v])||{},source=d.reuse&&EX[d.reuse]?EX[d.reuse]:base;
+  const p=Object.assign({},source,d,{name:a.name||source.name,fa:a.fa||'',equipment:a.equipment||'',cue:a.cue||'',variant:v,type:base.type,group:base.group});
+  p.muscles=d.muscles||source.muscles||base.muscles;p.img=d.img||source.img||base.img;p.steps=d.steps||source.steps||base.steps;p.tips=d.tips||source.tips||base.tips;p.yt=d.yt||source.yt||base.yt;
+  p.guide=d.guide===null?null:(d.guide||source.guide||null);p.side=d.side!=null?!!d.side:!!source.side;p.assist=d.assist!=null?!!d.assist:false;p.loadMode=d.loadMode||(p.assist?'assist':'external');
+  return p;
 }
-function machineGuideHTML(exId){
-  const x=EXTRAS[exId],g=x&&x.guide&&MACHINE_GUIDES[x.guide];if(!g)return '';
+function itemVariant(it){return variantKey(it&&it.variant)}
+function selectedProfile(day,i,create=false){const plan=DAY[day].items[i],s=session(day,i,create);return variantProfile(plan.ex,itemVariant(s))}
+function variantTabsHTML(exId,selected){
+  return `<div class="variant-picker"><div class="variant-cap"><span>Equipment option</span><small>Saved for this workout only</small></div><div class="variant-tabs" role="tablist" aria-label="Exercise equipment option">${VARIANT_KEYS.map(v=>{const p=variantProfile(exId,v),m=VARIANT_META[v],on=v===selected;return `<button type="button" class="variant-tab press${on?' on':''}" role="tab" aria-selected="${on}" data-act="variant" data-v="${v}"><span>${m.short}</span><b>${p.name}</b><em dir="rtl">${p.fa||''}</em></button>`}).join('')}</div><p class="variant-rule">${IC.info}<span>Pick the version you actually perform today. Progress and history are tracked separately for each version.</span></p></div>`;
+}
+function machineGuideHTML(profile){
+  const g=profile&&profile.guide&&MACHINE_GUIDES[profile.guide];if(!g)return '';
   return `<details class="machine-help"><summary class="machine-summary press"><span class="machine-ic">${IC.info}</span><span class="machine-name"><small>Machine guide</small><b>${g.en}</b><em dir="rtl">${g.fa}</em></span><span class="machine-arrow">${IC.chev}</span></summary><div class="machine-panel"><p class="machine-about" dir="rtl">${g.about}</p><p class="h3">Setup</p><ol class="machine-steps" dir="rtl">${g.setup.map(x=>`<li><span>${x}</span></li>`).join('')}</ol><p class="machine-check">${IC.check}<span dir="rtl">${g.check}</span></p></div></details>`;
 }
 
@@ -275,9 +367,10 @@ function cleanW(x){
   if(!x||typeof x!=='object'||typeof x.id!=='string'||!ID_RE.test(x.id))return null;
   const items=(Array.isArray(x.items)?x.items:[]).filter(it=>it&&typeof it.ex==='string'&&EX[it.ex]).map(it=>({
     ex:it.ex,
+    variant:variantKey(it.variant),
     sets:(Array.isArray(it.sets)?it.sets:[]).slice(0,20).map(s=>({w:normNum(s&&s.w).slice(0,7),r:normNum(s&&s.r).slice(0,4),d:!!(s&&s.d),t:finite(s&&s.t)}))
   }));
-  const w={id:x.id,v:2,day:x.id.slice(11),date:x.id.slice(0,10),startedAt:finite(x.startedAt),finishedAt:finite(x.finishedAt),items,abs:!!x.abs,bw:finite(x.bw)||75,durOverride:finite(x.durOverride),updatedAt:finite(x.updatedAt)||0};
+  const w={id:x.id,v:3,day:x.id.slice(11),date:x.id.slice(0,10),startedAt:finite(x.startedAt),finishedAt:finite(x.finishedAt),items,abs:!!x.abs,bw:finite(x.bw)||75,durOverride:finite(x.durOverride),updatedAt:finite(x.updatedAt)||0};
   if(x.deleted)w.deleted=true;
   return w;
 }
@@ -320,11 +413,11 @@ const Store={
   },
   ensure(day,date=activeDate(day)){
     const id=`${date}_${day}`,plan=DAY[day].items;let w=this.W[id];
-    if(!w||w.deleted){w=this.W[id]={id,v:2,day,date,startedAt:null,finishedAt:null,items:[],abs:false,bw:this.S.bw,durOverride:null,updatedAt:Date.now()};this.ver++}
+    if(!w||w.deleted){w=this.W[id]={id,v:3,day,date,startedAt:null,finishedAt:null,items:[],abs:false,bw:this.S.bw,durOverride:null,updatedAt:Date.now()};this.ver++}
     /* align stored items with the plan by exercise, not by position */
     const pool=w.items.slice();
-    w.items=plan.map(p=>{const k=pool.findIndex(x=>x.ex===p.ex);return k>=0?pool.splice(k,1)[0]:{ex:p.ex,sets:[]}}).concat(pool);
-    plan.forEach((p,i)=>{const x=w.items[i];while(x.sets.length<p.sets)x.sets.push({w:'',r:'',d:false,t:null})});
+    w.items=plan.map(p=>{const k=pool.findIndex(x=>x.ex===p.ex);return k>=0?pool.splice(k,1)[0]:{ex:p.ex,variant:'primary',sets:[]}}).concat(pool);
+    plan.forEach((p,i)=>{const x=w.items[i];x.variant=variantKey(x.variant);while(x.sets.length<p.sets)x.sets.push({w:'',r:'',d:false,t:null})});
     return w;
   },
   touch(w,now){
@@ -472,15 +565,21 @@ function session(day,i,create){const w=create?Store.ensure(day):todayW(day);retu
 const repsTxt=it=>`${it.reps[0]}–${it.reps[1]}`;
 const isComp=it=>EX[it.ex].type==='compound';
 const restFor=it=>isComp(it)?S.restC:S.restI;
-const setTxt=(s,ex)=>(s.w?(ex&&ex.assist?'−':'')+esc(s.w)+'×':'')+(esc(s.r)||'–');
 const bwU=kg=>S.unit==='kg'?kg:kg*2.20462;
-/* effective load: for assisted movements it's bodyweight minus assistance */
-const load=(ex,w,bw)=>{const W=num(w);return ex&&ex.assist?Math.max(0,bwU(bw||S.bw)-W):W};
+function setTxt(s,ex){
+  const r=esc(s.r)||'–',W=num(s.w),mode=ex&&ex.loadMode||'external';
+  if(mode==='assist')return `${W?'−'+esc(s.w):'BW'}×${r}`;
+  if(mode==='bodyweight')return `${W?'BW+'+esc(s.w):'BW'}×${r}`;
+  return (s.w?esc(s.w)+'×':'')+r;
+}
+function load(ex,w,bw){const W=num(w),mode=ex&&ex.loadMode||'external',B=bwU(bw||S.bw);if(mode==='assist')return Math.max(0,B-W);if(mode==='bodyweight')return B+W;return W}
 function topTxt(ex,top){
-  if(!top)return '';
-  if(ex.assist)return top.W?`${r1(top.W)} ${S.unit} assist × ${top.R}`:`Bodyweight × ${top.R}`;
+  if(!top)return '';const mode=ex&&ex.loadMode||'external';
+  if(mode==='assist')return top.W?`${r1(top.W)} ${S.unit} assist × ${top.R}`:`Bodyweight × ${top.R}`;
+  if(mode==='bodyweight')return `${top.W?'BW + '+r1(top.W)+' '+S.unit:'Bodyweight'} × ${top.R}`;
   return top.W?`${r1(top.W)} ${S.unit} × ${top.R}`:'';
 }
+
 function doneCount(key,i){const s=session(key,i);return s?s.sets.slice(0,DAY[key].items[i].sets).filter(x=>x.d).length:0}
 function dayProgress(key){let done=0,total=0;DAY[key].items.forEach((it,i)=>{total+=it.sets;done+=doneCount(key,i)});return{done,total}}
 function nextIdx(key){const its=DAY[key].items;for(let i=0;i<its.length;i++)if(doneCount(key,i)<its[i].sets)return i;return -1}
@@ -497,7 +596,7 @@ function weekDone(key){
 function doneKeysByWeek(){const m={};Store.list().forEach(w=>{const k=iso(satStart(parseISO(w.date)));(m[k]=m[k]||new Set()).add(w.day)});return m}
 function wStats(w){
   let sets=0,vol=0;const ts=[],groups={};
-  w.items.forEach(it=>{const ex=EX[it.ex];it.sets.forEach(s=>{if(!s.d)return;sets++;vol+=load(ex,s.w,w.bw)*num(s.r)*(ex&&ex.side?2:1);if(s.t)ts.push(s.t);if(ex)groups[ex.group]=(groups[ex.group]||0)+1})});
+  w.items.forEach(it=>{const ex=variantProfile(it.ex,itemVariant(it));it.sets.forEach(s=>{if(!s.d)return;sets++;vol+=load(ex,s.w,w.bw)*num(s.r)*(ex&&ex.side?2:1);if(s.t)ts.push(s.t);if(ex)groups[ex.group]=(groups[ex.group]||0)+1})});
   let dur;
   if(w.durOverride!=null)dur=w.durOverride;
   else{
@@ -512,19 +611,17 @@ function wStats(w){
   return{sets,vol:Math.round(vol),dur,kcal,groups};
 }
 const XH=new Map();let xhv=-1;
-function exHistory(exId,excludeId){
-  if(xhv!==Store.ver){XH.clear();xhv=Store.ver}
-  const key=exId+'|'+(excludeId||'');
-  if(XH.has(key))return XH.get(key);
-  const ex=EX[exId],out=[];
+function exHistory(exId,excludeId,variant='primary'){
+  variant=variantKey(variant);if(xhv!==Store.ver){XH.clear();xhv=Store.ver}
+  const key=exId+'|'+variant+'|'+(excludeId||'');if(XH.has(key))return XH.get(key);
+  const ex=variantProfile(exId,variant),out=[];
   Store.list().forEach(wk=>{if(wk.id===excludeId)return;wk.items.forEach(it=>{
-    if(it.ex!==exId)return;const ds=it.sets.filter(s=>s.d);if(!ds.length)return;
+    if(it.ex!==exId||itemVariant(it)!==variant)return;const ds=it.sets.filter(s=>s.d);if(!ds.length)return;
     let top=null,best=0;
     ds.forEach(s=>{const W=num(s.w),R=num(s.r),L=load(ex,s.w,wk.bw);best=Math.max(best,e1(L,R));if(!top||L>top.L||(L===top.L&&R>top.R))top={W,R,L}});
-    out.push({wk,sets:ds,top,e1:best});
+    out.push({wk,item:it,variant,sets:ds,top,e1:best});
   })});
-  XH.set(key,out);
-  return out;
+  XH.set(key,out);return out;
 }
 
 /* ---------- Analytics ---------- */
@@ -576,15 +673,15 @@ function insights(p,a,pa){
   if(pa.tot.count){const av=t.vol/t.count,pv=pa.tot.vol/pa.tot.count;if(pv>0&&av>0){const ch=Math.round((av-pv)/pv*100);add(ch>=0?'good':'warn',ch>=0?IC.up:IC.down,`Volume per workout ${ch>=0?'up':'down'} ${Math.abs(ch)}%`,`${fmtK(av)} ${u} per session vs ${fmtK(pv)} ${u} the previous ${rn}${isCur?' at this point':''}.`)}}
   add('info',IC.clock,`Average session: ${fmtDur(t.dur/t.count)}`,`About ${fmtInt(t.kcal/t.count)} kcal per workout, ${fmtInt(t.kcal)} kcal in total. Estimated from duration and your body weight.`);
   let gain=null,stall=null;
-  Object.keys(EX).forEach(id=>{
-    const h=exHistory(id);if(!h.length)return;
+  Object.keys(EX).forEach(id=>VARIANT_KEYS.forEach(variant=>{
+    const h=exHistory(id,null,variant);if(!h.length)return;
     const before=h.filter(e=>e.wk.date<p.si),inP=h.filter(e=>e.wk.date>=p.si&&e.wk.date<=p.ei);
-    if(before.length&&inP.length){const b=Math.max(...before.map(e=>e.e1)),n=Math.max(...inP.map(e=>e.e1));if(b>0&&n>b){const ch=(n-b)/b;if(!gain||ch>gain.ch)gain={id,ch,b,n}}}
+    if(before.length&&inP.length){const b=Math.max(...before.map(e=>e.e1)),n=Math.max(...inP.map(e=>e.e1));if(b>0&&n>b){const ch=(n-b)/b;if(!gain||ch>gain.ch)gain={id,variant,ch,b,n}}}
     const l3=h.filter(e=>e.wk.date<=p.ei).slice(-3);
-    if(!stall&&l3.length===3&&l3[2].wk.date>=p.si&&l3[0].e1>0&&l3[1].e1<=l3[0].e1&&l3[2].e1<=l3[0].e1)stall=id;
-  });
-  if(gain)add('good',IC.trophy,`Biggest gain: ${EX[gain.id].name}`,`Estimated 1RM up ${Math.round(gain.ch*100)}% (${r1(gain.b)} → ${r1(gain.n)} ${u}).`);
-  if(stall)add('warn',IC.alert,`${EX[stall].name} has stalled`,EX[stall].assist?'No progress over the last 3 sessions. Add one rep per set, or take a little assistance off.':'No progress over the last 3 sessions. Add one rep per set, or make a small weight jump.');
+    if(!stall&&l3.length===3&&l3[2].wk.date>=p.si&&l3[0].e1>0&&l3[1].e1<=l3[0].e1&&l3[2].e1<=l3[0].e1)stall={id,variant};
+  }));
+  if(gain){const gx=variantProfile(gain.id,gain.variant);add('good',IC.trophy,`Biggest gain: ${gx.name}`,`Estimated 1RM up ${Math.round(gain.ch*100)}% (${r1(gain.b)} → ${r1(gain.n)} ${u}) using the ${VARIANT_META[gain.variant].short.toLowerCase()} version.`)}
+  if(stall){const sx=variantProfile(stall.id,stall.variant);add('warn',IC.alert,`${sx.name} has stalled`,sx.loadMode==='assist'?'No progress over the last 3 sessions. Add one rep per set, or take a little assistance off.':'No progress over the last 3 sessions. Add one rep per set, or make a small load jump.')}
   const miss=missedIn(p,dk);
   if(miss.length){const c={};miss.forEach(x=>c[x.key]=(c[x.key]||0)+1);const k=Object.keys(c).sort((x,y)=>c[y]-c[x])[0];add('warn',IC.calendar,`Most skipped: ${DAY[k].title}`,`Missed ${c[k]}× this ${rn}. If that day doesn't suit you, move it to another day in the same week.`)}
   return out;
@@ -624,13 +721,15 @@ function probe(url){
   if(!probeCache.has(url))probeCache.set(url,new Promise(res=>{const im=new Image();im.onload=()=>res(true);im.onerror=()=>res(false);im.src=url}));
   return probeCache.get(url);
 }
-function resolveImg(exId){
-  if(!imgCache.has(exId))imgCache.set(exId,(async()=>{for(const id of EX[exId].img){const a=IMG+id+'/0.jpg';if(await probe(a))return{a,b:IMG+id+'/1.jpg'}}return null})());
-  return imgCache.get(exId);
+function resolveImg(exId,variant='primary'){
+  variant=variantKey(variant);const key=exId+':'+variant,profile=variantProfile(exId,variant);
+  if(!imgCache.has(key))imgCache.set(key,(async()=>{for(const id of profile.img||[]){const a=IMG+id+'/0.jpg';if(await probe(a))return{a,b:IMG+id+'/1.jpg'}}return null})());
+  return imgCache.get(key);
 }
+
 function loadThumbs(){
   $$('.thumb',app).forEach(async t=>{
-    const r=await resolveImg(t.dataset.ex),im=$('img',t);
+    const r=await resolveImg(t.dataset.ex,t.dataset.var||'primary'),im=$('img',t);
     if(!r){t.classList.add('none');return}
     im.onload=()=>t.classList.add('ok');im.src=r.a;
     if(im.complete&&im.naturalWidth)t.classList.add('ok');
@@ -638,18 +737,16 @@ function loadThumbs(){
 }
 let mediaTimer=null,mediaPaused=RM;
 function stopMedia(){clearInterval(mediaTimer);mediaTimer=null}
-async function setupMedia(exId){
-  const m=$('#media',sbody);if(!m)return;
-  const r=await resolveImg(exId);if(!m.isConnected)return;
+async function setupMedia(exId,variant='primary'){
+  const m=$('#media',sbody);if(!m)return;variant=variantKey(variant);const profile=variantProfile(exId,variant);
+  const r=await resolveImg(exId,variant);if(!m.isConnected)return;
   const[f0,f1]=$$('.frame',m),tag=$('.media-tag',m),btn=$('.media-btn',m);
   if(!r){m.classList.add('failed');$('.media-ph span',m).textContent='Image unavailable — watch the tutorial below';return}
-  f0.alt=EX[exId].name+', start position';f0.src=r.a;f0.classList.add('on');m.classList.add('ready');
+  f0.alt=profile.name+', start position';f0.src=r.a;f0.classList.add('on');m.classList.add('ready');
   if(!(await probe(r.b))||!m.isConnected)return;
-  f1.alt=EX[exId].name+', end position';f1.src=r.b;m.classList.add('anim');
-  let on=0;
-  const paint=()=>{btn.innerHTML=mediaPaused?IC.play:IC.pause;btn.setAttribute('aria-label',mediaPaused?'Play animation':'Pause animation')};
-  paint();btn.onclick=e=>{e.stopPropagation();mediaPaused=!mediaPaused;paint()};
-  stopMedia();
+  f1.alt=profile.name+', end position';f1.src=r.b;m.classList.add('anim');
+  let on=0;const paint=()=>{btn.innerHTML=mediaPaused?IC.play:IC.pause;btn.setAttribute('aria-label',mediaPaused?'Play animation':'Pause animation')};
+  paint();btn.onclick=e=>{e.stopPropagation();mediaPaused=!mediaPaused;paint()};stopMedia();
   mediaTimer=setInterval(()=>{if(mediaPaused)return;on^=1;f0.classList.toggle('on',!on);f1.classList.toggle('on',!!on);tag.textContent=on?'Finish':'Start'},1400);
 }
 
@@ -700,10 +797,11 @@ function homeView(){
 }
 function dotsHTML(key,i){const it=DAY[key].items[i],s=session(key,i);let h='';for(let j=0;j<it.sets;j++)h+=`<i class="${s&&s.sets[j]&&s.sets[j].d?'on':''}"></i>`;return h}
 function rowHTML(key,i,nx,started){
-  const it=DAY[key].items[i],ex=EX[it.ex],complete=doneCount(key,i)>=it.sets;
+  const it=DAY[key].items[i],sess=session(key,i),variant=itemVariant(sess),ex=variantProfile(it.ex,variant),complete=doneCount(key,i)>=it.sets;
+  const alt=variant!=='primary'?`<span class="variant-mini ${variant}">${VARIANT_META[variant].short}</span>`:'';
   return `<a class="ex-row press${complete?' complete':''}${started&&i===nx?' next':''}" href="#/${key}/${i}" data-i="${i}" style="--i:${i}">
-    <span class="thumb" data-ex="${it.ex}"><img alt="" decoding="async"><em>${i+1}</em></span>
-    <span class="ex-main"><span class="up">Up next</span><span class="ex-name">${ex.name}</span>
+    <span class="thumb" data-ex="${it.ex}" data-var="${variant}"><img alt="" decoding="async"><em>${i+1}</em></span>
+    <span class="ex-main"><span class="up">Up next</span><span class="ex-name-line"><span class="ex-name">${ex.name}</span>${alt}</span>
     <span class="ex-meta"><b>${it.sets} × ${repsTxt(it)}</b>${ex.side?' each leg':''} · ${isComp(it)?'Compound':'Isolation'}</span>
     <span class="dots">${dotsHTML(key,i)}</span></span>${IC.chev}</a>`;
 }
@@ -717,7 +815,7 @@ function headHTML(key){
     const el=w.startedAt?(Date.now()-w.startedAt)/60000:0;
     cta=`<p class="live"><i></i><span id="elapsed">In progress · ${fmtDur(el)}</span></p>`+(nx===-1
       ?`<button class="btn-primary press" data-act="finish"><span class="cta-t">Finish workout</span>${IC.flag}</button>`
-      :`<a class="btn-primary press" href="#/${key}/${nx}"><span class="cta-t">Continue: ${EX[its[nx].ex].name}</span>${IC.chev}</a><button class="ghost press mt-s wide" data-act="finish">${IC.flag} Finish workout</button>`);
+      :`<a class="btn-primary press" href="#/${key}/${nx}"><span class="cta-t">Continue: ${selectedProfile(key,nx).name}</span>${IC.chev}</a><button class="ghost press mt-s wide" data-act="finish">${IC.flag} Finish workout</button>`);
   }else cta=`<a class="btn-primary press" href="#/${key}/${Math.max(0,nx)}" data-act="start"><span class="cta-t">Start workout</span>${IC.play}</a>`;
   return `<p class="eyebrow">${eyebrow}</p><h1>${d.title}</h1><p class="sub">${d.focus}</p>
     <div class="stats"><div><b>${its.length}</b><span>Exercises</span></div><div><b>${p.total}</b><span>Sets</span></div><div><b>~${estMin(key)}</b><span>Minutes</span></div></div>
@@ -847,30 +945,34 @@ function updateHistory(){
 /* ---------- Sheets ---------- */
 function histRows(list,ex){return list.map(e=>`<div class="xh"><div class="xh-top"><span>${fmtDate(e.wk.date)} · ${relDays(e.wk.date)}</span>${e.pr?'<span class="pr">PR</span>':''}<em>${e.e1?'e1RM '+r1(e.e1):''}</em></div><div class="set-chips">${e.sets.map(s=>`<span>${setTxt(s,ex)}</span>`).join('')}</div></div>`).join('')}
 function exSheet(day,i,tab){
-  const d=DAY[day],it=d.items[i],ex=EX[it.ex],comp=isComp(it);
-  const s=session(day,i),hist=exHistory(it.ex,todayId(day)),prev=hist[hist.length-1]||null;
-  const n=doneCount(day,i),allDone=n>=it.sets;
+  const d=DAY[day],it=d.items[i],sess=session(day,i),variant=itemVariant(sess),ex=variantProfile(it.ex,variant),comp=isComp(it);
+  const s=session(day,i),hist=exHistory(it.ex,todayId(day),variant),prev=hist[hist.length-1]||null;
+  const n=doneCount(day,i),allDone=n>=it.sets,meta=VARIANT_META[variant];
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.yt);
   const topHit=prev&&prev.sets.length>=it.sets&&prev.sets.slice(0,it.sets).every(x=>num(x.r)>=it.reps[1]);
   let rows='',carry='';
   for(let j=0;j<it.sets;j++){
     const c=s&&s.sets[j]||{w:'',r:'',d:false},p=prev&&prev.sets[j]||{},pw=carry||p.w||'';
+    const mode=ex.loadMode||'external',weightLabel=mode==='assist'?'assistance':mode==='bodyweight'?'added weight':'weight';
     rows+=`<div class="set-row${c.d?' done':''}"><span class="set-n">${j+1}</span>
-      <label class="fld"><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-f="w" data-s="${j}" value="${esc(c.w)}" placeholder="${esc(pw||'–')}" data-p="${esc(pw)}" data-p0="${esc(p.w||'')}" aria-label="Set ${j+1} ${ex.assist?'assistance':'weight'}"><em>${S.unit}</em></label>
+      <label class="fld"><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-f="w" data-s="${j}" value="${esc(c.w)}" placeholder="${esc(pw||'–')}" data-p="${esc(pw)}" data-p0="${esc(p.w||'')}" aria-label="Set ${j+1} ${weightLabel}"><em>${S.unit}</em></label>
       <label class="fld"><input type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" data-f="r" data-s="${j}" value="${esc(c.r)}" placeholder="${esc(p.r||repsTxt(it))}" data-p="${esc(p.r||'')}" aria-label="Set ${j+1} reps"><em>reps</em></label>
       <button class="chk" data-act="check" data-s="${j}" aria-pressed="${c.d}" aria-label="Mark set ${j+1} done">${IC.check}</button></div>`;
     if(c.w)carry=c.w;
   }
-  const histHTML=hist.length?`<p class="h3 mt">Previous sessions</p><div class="xh-list">${histRows(hist.slice(-3).reverse(),ex)}</div><a class="ghost press rest-btn" href="#/${day}/x/${it.ex}">${IC.chart} Full history and progress chart</a>`:'';
-  const pv=i>0?`<button class="nav-btn press" data-act="nav" data-to="${i-1}">${IC.back}<span><small>Previous</small>${EX[d.items[i-1].ex].name}</span></button>`:'<span></span>';
-  const nx=i<d.items.length-1?`<button class="nav-btn nx press${allDone?' go':''}" data-act="nav" data-to="${i+1}"><span><small>Next</small>${EX[d.items[i+1].ex].name}</span>${IC.chev}</button>`
+  const histHTML=hist.length?`<p class="h3 mt">Previous ${meta.short.toLowerCase()} sessions</p><div class="xh-list">${histRows(hist.slice(-3).reverse(),ex)}</div><a class="ghost press rest-btn" href="#/${day}/x/${it.ex}/${variant}">${IC.chart} Full history for this version</a>`:'';
+  const pv=i>0?`<button class="nav-btn press" data-act="nav" data-to="${i-1}">${IC.back}<span><small>Previous</small>${selectedProfile(day,i-1).name}</span></button>`:'<span></span>';
+  const nx=i<d.items.length-1?`<button class="nav-btn nx press${allDone?' go':''}" data-act="nav" data-to="${i+1}"><span><small>Next</small>${selectedProfile(day,i+1).name}</span>${IC.chev}</button>`
     :`<button class="nav-btn nx press${allDone?' go':''}" data-act="close"><span><small>Last exercise</small>Back to workout</span>${IC.check}</button>`;
+  const variantNote=variant==='primary'?'Programmed movement':`${meta.label} · programmed slot: ${EX[it.ex].name}`;
   return `<div class="sx${tab===1?' log':''}">
     <div class="media-wrap"><div class="media-in"><div class="media" id="media"><div class="media-ph">${IC.dumbbell}<span>Loading demo</span></div><img class="frame" alt=""><img class="frame" alt=""><span class="media-tag">Start</span><button class="media-btn" aria-label="Pause animation"></button></div></div></div>
     <div class="sx-head">
       <p class="eyebrow">Exercise ${i+1} of ${d.items.length} · ${comp?'Compound':'Isolation'}${it.ss?' · Superset '+it.ss:''}</p>
-      <h2 class="sx-title">${ex.name}</h2>
+      <div class="variant-context"><span class="variant-state ${variant}">${meta.short}</span><span>${variantNote}</span></div>
+      <h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}
       <div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>
+      ${variantTabsHTML(it.ex,variant)}
       <div class="specs">
         <div class="spec"><span>Sets</span><b>${it.sets}</b></div>
         <div class="spec"><span>Reps</span><b>${repsTxt(it)}${ex.side?'/leg':''}</b></div>
@@ -884,18 +986,18 @@ function exSheet(day,i,tab){
     </div>
     <div class="sx-body">
       <div class="panel" id="pan0" role="tabpanel" aria-labelledby="tab0" ${tab===0?'':'hidden'}>
-        <a class="yt press" href="${yt}" target="_blank" rel="noopener"><span class="yt-ic">${IC.yt}</span>Watch tutorial on YouTube<span class="ext">${IC.ext}</span></a>
-        ${equipmentOptionsHTML(it.ex,it)}
-        ${machineGuideHTML(it.ex)}
+        <a class="yt press" href="${yt}" target="_blank" rel="noopener"><span class="yt-ic">${IC.yt}</span>Watch ${ex.name} tutorial<span class="ext">${IC.ext}</span></a>
+        ${ex.cue?`<div class="variant-cue">${IC.info}<span>${ex.cue}</span></div>`:''}
+        ${machineGuideHTML(ex)}
         <p class="h3 technique-h3">How to do it</p><ol class="steps">${ex.steps.map(x=>`<li><span>${x}</span></li>`).join('')}</ol>
         <p class="h3">Form tips</p><ul class="tips">${ex.tips.map(x=>`<li>${IC.check}<span>${x}</span></li>`).join('')}</ul>
         <p class="note">${IC.info}<span>${comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''}</span></p>
       </div>
       <div class="panel" id="pan1" role="tabpanel" aria-labelledby="tab1" ${tab===1?'':'hidden'}>
-        ${topHit?`<div class="hint">${IC.trend}<span>${ex.assist?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the weight slightly today.'}</span></div>`:''}
-        ${ex.assist?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:''}
-        ${prev?'':`<p class="first-log">First time logging this one. Your numbers will show as hints next session.</p>`}
-        <div class="set-head"><span>#</span><span>${ex.assist?'Assist':'Weight'}</span><span>Reps</span><span></span></div>
+        ${topHit?`<div class="hint">${IC.trend}<span>${ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
+        ${ex.loadMode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:ex.loadMode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight. If you add external load, enter only the added weight.</p>`:''}
+        ${prev?'':`<p class="first-log">First time logging this version. Its numbers will be tracked separately from the other equipment options.</p>`}
+        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}</span><span>Reps</span><span></span></div>
         ${rows}
         <button class="ghost press rest-btn" data-act="rest">${IC.clock} Start ${fmt(restFor(it))} rest timer</button>
         ${histHTML}
@@ -904,33 +1006,34 @@ function exSheet(day,i,tab){
     <div class="sx-nav">${pv}${nx}</div>
   </div>`;
 }
-function xSheet(exId){
-  const ex=EX[exId],u=S.unit,h=exHistory(exId).map(e=>Object.assign({},e));
-  const head=`<p class="eyebrow">Exercise history</p><h2 class="sx-title">${ex.name}</h2><div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>`;
-  if(!h.length)return `<div class="sx"><div class="sx-pad">${head}<p class="first-log">No sets logged yet. Your history for this exercise will build up here.</p></div></div>`;
+function xSheet(exId,variant='primary'){
+  variant=variantKey(variant);const ex=variantProfile(exId,variant),u=S.unit,h=exHistory(exId,null,variant).map(e=>Object.assign({},e));
+  const tabs=`<div class="history-variant-tabs">${VARIANT_KEYS.map(v=>{const p=variantProfile(exId,v),on=v===variant;return `<a class="history-variant press${on?' on':''}" href="#/${cur.base}/x/${exId}/${v}"><span>${VARIANT_META[v].short}</span><b>${p.name}</b></a>`}).join('')}</div>`;
+  const head=`<p class="eyebrow">Exercise history · ${VARIANT_META[variant].label}</p><h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}<div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>${tabs}`;
+  if(!h.length)return `<div class="sx"><div class="sx-pad">${head}<p class="first-log history-empty">No sets logged for this version yet. Choose another tab to see its separate history.</p></div></div>`;
   let best=0,heavy=null,run=0;
   h.forEach(e=>{best=Math.max(best,e.e1);if(e.top&&(!heavy||e.top.L>heavy.L))heavy=e.top;e.pr=run>0&&e.e1>run;run=Math.max(run,e.e1)});
-  const last=h[h.length-1],topLbl=ex.assist?'Effective load':'Top set';
+  const last=h[h.length-1],topLbl=ex.loadMode==='assist'?'Effective load':'Top set';
   const pts=h.slice(-24).map(e=>({lbl:fmtDate(e.wk.date),y:e.top?r1(e.top.L):0,y2:r1(e.e1)}));
   const chart=pts.length>1?lineChart(pts,`${ex.name}: ${topLbl.toLowerCase()} and estimated 1RM over time`):'';
   return `<div class="sx"><div class="sx-pad">${head}
-    <div class="kpis">
-      <div class="kpi"><span>Best est. 1RM</span><b>${best?r1(best):'–'}<small>${best?u:''}</small></b></div>
-      <div class="kpi"><span>${ex.assist?'Best effective load':'Heaviest set'}</span><b>${heavy&&heavy.L?r1(heavy.L):'–'}<small>${heavy&&heavy.L?`${u} × ${heavy.R}`:''}</small></b></div>
+    <div class="kpis mt-s">
+      <div class="kpi"><span>Best est. 1RM</span><b>${best?r1(best):'–'}${best?`<small>${u}</small>`:''}</b></div>
+      <div class="kpi"><span>${topLbl}</span><b class="sm">${heavy?topTxt(ex,heavy):'–'}</b></div>
       <div class="kpi"><span>Sessions</span><b>${h.length}</b></div>
       <div class="kpi"><span>Last trained</span><b class="sm">${relDays(last.wk.date)}</b></div>
     </div>
-    ${ex.assist?'<p class="first-log mt-s">Effective load = body weight minus assistance.</p>':''}
+    ${ex.loadMode==='assist'?'<p class="first-log mt-s">Effective load = body weight minus assistance.</p>':''}
     ${chart?`<div class="card flat"><div class="card-h"><b>Progress</b><span class="card-s"><i class="lg-l"></i>${topLbl}<i class="lg-l d"></i>Est. 1RM</span></div>${chart}</div>`:''}
-    <p class="h3 mt">All sessions</p><div class="xh-list">${histRows(h.slice().reverse(),ex)}</div>
+    <p class="h3 mt">All ${VARIANT_META[variant].short.toLowerCase()} sessions</p><div class="xh-list">${histRows(h.slice().reverse(),ex)}</div>
   </div></div>`;
 }
 function wSheet(id){
   const w=Store.get(id);if(!w)return `<div class="sx"><div class="sx-pad"><p class="first-log">This workout no longer exists.</p></div></div>`;
   const st=wStats(w),d=DAY[w.day],dt=parseISO(w.date),u=S.unit,base=cur.base;
   const fresh=w.finishedAt&&Date.now()-w.finishedAt<10*60000;
-  const ex=w.items.map((it,i)=>{const e=EX[it.ex];if(!e)return'';const ds=it.sets.filter(s=>s.d);
-    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${base}/x/${it.ex}">${e.name}${IC.chev}</a><div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div></div></div>`}).join('');
+  const ex=w.items.map((it,i)=>{const v=itemVariant(it),e=variantProfile(it.ex,v);if(!e)return'';const ds=it.sets.filter(s=>s.d),tag=v!=='primary'?`<span class="variant-mini ${v}">${VARIANT_META[v].short}</span>`:'';
+    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${base}/x/${it.ex}/${v}"><span>${e.name}</span>${tag}${IC.chev}</a>${e.fa?`<small class="wx-fa" dir="rtl">${e.fa}</small>`:''}<div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div></div></div>`}).join('');
   return `<div class="sx"><div class="sx-pad">
     <p class="eyebrow">${fresh?'Workout complete':dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p>
     <h2 class="sx-title">${d?d.title:'Workout'}</h2>
@@ -1021,7 +1124,7 @@ function parse(h=H()){
   const x=rest[0];let sh=null;
   if(x==='settings'||x==='rules')sh={t:x};
   else if(x==='w'&&rest[1]&&Store.get(rest[1]))sh={t:'w',id:rest[1]};
-  else if(x==='x'&&rest[1]&&EX[rest[1]])sh={t:'x',id:rest[1]};
+  else if(x==='x'&&rest[1]&&EX[rest[1]])sh={t:'x',id:rest[1],variant:variantKey(rest[2])};
   else if(DAY[base]&&/^\d+$/.test(x||'')&&DAY[base].items[+x])sh={t:'ex',i:+x};
   return{base,sheet:sh};
 }
@@ -1060,19 +1163,19 @@ function route(){
   restoreFocus();
 }
 function openSheet(r){
-  const t=r.sheet.t,key=t==='ex'?`ex:${r.base}:${r.sheet.i}`:(t==='w'||t==='x')?`${t}:${r.sheet.id}`:t;
+  const t=r.sheet.t,key=t==='ex'?`ex:${r.base}:${r.sheet.i}`:t==='x'?`x:${r.sheet.id}:${r.sheet.variant}`:t==='w'?`w:${r.sheet.id}`:t;
   if(sheetOpen&&key===sheetKey)return;
   const exSwap=sheetOpen&&t==='ex'&&(sheetKey||'').startsWith('ex:');
   const dir=exSwap?(r.sheet.i>+sheetKey.split(':')[2]?'fwd':'back'):(sheetOpen?'swap':'');
   if(t==='ex'&&!exSwap&&!(sheetKey||'').startsWith('x:'))curTab=dayProgress(r.base).done>0?1:0;
   stopMedia();
-  sbody.innerHTML=t==='ex'?exSheet(r.base,r.sheet.i,curTab):t==='settings'?settingsSheet():t==='rules'?rulesSheet():t==='w'?wSheet(r.sheet.id):xSheet(r.sheet.id);
+  sbody.innerHTML=t==='ex'?exSheet(r.base,r.sheet.i,curTab):t==='settings'?settingsSheet():t==='rules'?rulesSheet():t==='w'?wSheet(r.sheet.id):xSheet(r.sheet.id,r.sheet.variant);
   sbody.scrollTop=0;
   if(dir)sbody.firstElementChild.classList.add(dir);
   sheetKey=key;
   const ph=stack[stack.length-2],pr=ph?parse(ph):null,canBack=!!(pr&&pr.sheet&&pr.base===r.base);
   $('#sheetBack').hidden=!canBack;sheet.classList.toggle('has-back',canBack&&t!=='ex');
-  if(t==='ex')setupMedia(DAY[r.base].items[r.sheet.i].ex);
+  if(t==='ex'){const ss=session(r.base,r.sheet.i);setupMedia(DAY[r.base].items[r.sheet.i].ex,itemVariant(ss))}
   if(!sheetOpen){
     lastFocus=document.activeElement;
     sheetOpen=true;root.inert=false;root.setAttribute('aria-hidden','false');document.body.classList.add('lock');
@@ -1099,6 +1202,13 @@ function setTab(v){
   $$('button',seg).forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   $$('.panel',sbody).forEach((p,k)=>{p.hidden=k!==v;if(k===v){p.classList.remove('in');void p.offsetWidth;p.classList.add('in')}});
 }
+async function setVariant(v){
+  v=variantKey(v);const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],old=itemVariant(item);if(v===old)return;
+  const touched=item.sets.some(s=>s.d||s.w||s.r);
+  if(touched&&!(await ask(`Switch to ${variantProfile(it.ex,v).name}? Logged sets for this exercise will be cleared so history stays accurate.`,'Switch & clear')))return;
+  if(touched)item.sets=item.sets.map(()=>({w:'',r:'',d:false,t:null}));
+  item.variant=v;Store.touch(w,true);stopMedia();sbody.innerHTML=exSheet(day,i,curTab);setupMedia(it.ex,v);const row=$(`.ex-row[data-i="${i}"]`,app);if(row){row.outerHTML=rowHTML(day,i,nextIdx(day),dayProgress(day).done>0);loadThumbs()}updateDay(day);toast(`Using ${variantProfile(it.ex,v).name} today`);
+}
 function checkComplete(key){
   const p=dayProgress(key);if(p.done<p.total)return false;
   const w=todayW(key);toast(w&&w.abs?'All done. Tap Finish workout to save it.':'All sets done. Abs next, then tap Finish.');
@@ -1114,7 +1224,7 @@ async function finishWorkout(key){
   location.hash=`#/${key}/w/${w.id}`;
 }
 function toggleSet(k,btn){
-  const{day,i,it}=ctx(),w=Store.ensure(day),s=w.items[i],set=s.sets[k],row=btn.closest('.set-row'),ex=EX[it.ex],src=`${w.id}:${i}:${k}`;
+  const{day,i,it}=ctx(),w=Store.ensure(day),s=w.items[i],set=s.sets[k],row=btn.closest('.set-row'),variant=itemVariant(s),ex=variantProfile(it.ex,variant),src=`${w.id}:${i}:${k}`;
   set.d=!set.d;set.t=set.d?Date.now():null;
   if(set.d){
     const wi=$('[data-f="w"]',row),ri=$('[data-f="r"]',row);
@@ -1135,13 +1245,13 @@ function toggleSet(k,btn){
     const W=num(set.w),R=num(set.r),c1=e1(load(ex,set.w,w.bw),R);
     let pr=false;
     if(c1>0){
-      const before=Math.max(0,...exHistory(it.ex,w.id).map(e=>e.e1));
+      const before=Math.max(0,...exHistory(it.ex,w.id,variant).map(e=>e.e1));
       const todayB=Math.max(0,...s.sets.filter(x=>x!==set&&x.d).map(x=>e1(load(ex,x.w,w.bw),num(x.r))));
       pr=before>0&&c1>before&&c1>todayB;
     }
     const nxt=DAY[day].items[i+1];
-    startTimer(restFor(it),it.ss&&nxt&&nxt.ss===it.ss?`Superset: go to ${EX[nxt.ex].name}`:all?'Rest · next exercise':`Rest · then set ${n+1} of ${it.sets}`,src);
-    if(pr){toast(ex.assist?`New PR · ${R} reps ${W?`with ${r1(W)} ${S.unit} assist`:'at bodyweight'}`:`New PR · ${r1(W)} ${S.unit} × ${R} on ${ex.name}`);haptic([30,60,30,60,30])}
+    startTimer(restFor(it),it.ss&&nxt&&nxt.ss===it.ss?`Superset: go to ${selectedProfile(day,i+1).name}`:all?'Rest · next exercise':`Rest · then set ${n+1} of ${it.sets}`,src);
+    if(pr){const mode=ex.loadMode||'external',msg=mode==='assist'?`New PR · ${R} reps ${W?`with ${r1(W)} ${S.unit} assist`:'at bodyweight'}`:mode==='bodyweight'?`New PR · ${W?'BW + '+r1(W)+' '+S.unit:'Bodyweight'} × ${R} on ${ex.name}`:`New PR · ${r1(W)} ${S.unit} × ${R} on ${ex.name}`;toast(msg);haptic([30,60,30,60,30])}
     else if(all&&!checkComplete(day))toast(`${ex.name} complete`);
   }
 }
@@ -1150,7 +1260,7 @@ function propagateWeight(k,val){
 }
 function exportData(){
   Store.flush();
-  const blob=new Blob([JSON.stringify({app:'gp',v:2,exportedAt:new Date().toISOString(),workouts:Store.W,settings:S})],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'gp',v:3,exportedAt:new Date().toISOString(),workouts:Store.W,settings:S})],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`workout-backup-${iso()}.json`;
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
   toast('Backup downloaded');
@@ -1180,9 +1290,10 @@ root.addEventListener('click',async e=>{
   if(a==='close')return requestClose();
   if(a==='sback')return history.back();
   if(a==='tab')return setTab(+el.dataset.v);
+  if(a==='variant')return setVariant(el.dataset.v);
   if(a==='check')return toggleSet(+el.dataset.s,el);
   if(a==='nav')return navEx(+el.dataset.to);
-  if(a==='rest'){const{it}=ctx();unlockAudio();return startTimer(restFor(it),'Rest · '+EX[it.ex].name)}
+  if(a==='rest'){const{day,i,it}=ctx(),ex=selectedProfile(day,i);unlockAudio();return startTimer(restFor(it),'Rest · '+ex.name)}
   if(a==='unit'){S.unit=el.dataset.v==='lb'?'lb':'kg';Store.saveS();const seg=el.parentElement;seg.style.setProperty('--v',S.unit==='kg'?0:1);$$('button',seg).forEach(b=>{const on=b.dataset.v===S.unit;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});$('#bwV').textContent=bwTxt();return}
   if(a==='bw'){const step=S.unit==='kg'?.5:.45359237;S.bw=Math.round(Math.min(250,Math.max(30,S.bw+ +el.dataset.d*step))*100)/100;Store.saveS();$('#bwV').textContent=bwTxt();return}
   if(a==='step'){const k=el.dataset.k,lo=k==='restC'?60:30,hi=k==='restC'?300:180;S[k]=Math.min(hi,Math.max(lo,S[k]+ +el.dataset.d));Store.saveS();$('.stp-v',el.parentElement).textContent=fmt(S[k]);return}

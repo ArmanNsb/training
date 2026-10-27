@@ -1,5 +1,5 @@
 /* Bump SHELL on every deploy so phones pick up the new files */
-const SHELL='gp-shell-v4-equipment-options';
+const SHELL='gp-shell-v5-interactive-variants';
 const CDN='gp-cdn-v1';
 const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg','cloud-config.js'];
 const CDN_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','raw.githubusercontent.com'];
