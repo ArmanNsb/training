@@ -11,7 +11,7 @@ const CONFIG={
     token:''
   },
   met:{lifting:5.0,abs:3.8}, // MET values used for calorie estimates
-  absMinutes:20,
+  absMinutes:30,
   maxSessionMin:240,
   tombstoneDays:30,   // deleted workouts are purged locally after this many days
   overnightHours:6    // an unfinished workout keeps collecting sets past midnight for this long
@@ -66,9 +66,28 @@ const EX={
   machineChest:{name:'Machine Chest Press',type:'compound',group:'Chest',muscles:['Chest','Front delts','Triceps'],img:['Machine_Bench_Press','Leverage_Chest_Press'],yt:'machine chest press proper form',
     steps:['Adjust the seat so the handles line up with your mid chest.','Set your shoulder blades back against the pad and keep your feet flat.','Press the handles forward until your arms are nearly straight.','Return under control until you feel a deep stretch across your chest.'],
     tips:['Don\'t let your shoulders roll forward at the end of the press.','Control the stretch — no bouncing out of the bottom.']},
+  lyingChestPress:{name:'Lying Plate-Loaded Chest Press',type:'compound',group:'Chest',muscles:['Chest','Front delts','Triceps'],img:[{url:'https://cdn.zyloai.app/exercise/images/lever-lying-chest-press-7.webp',b:'https://cdn.zyloai.app/exercise/images/lever-lying-chest-press-5.webp'}],yt:'lever lying chest press plate loaded proper form',
+    steps:['Set the bench and handles so the grips begin level with the middle of your chest.','Lie back with your head, upper back and hips supported; plant both feet firmly on the floor.','Load both sides evenly, keep your shoulder blades gently pinned to the pad, and press the handles up and forward.','Lower slowly until you feel a comfortable chest stretch; do not bounce or let your shoulders roll forward.'],
+    tips:['Keep both sides loaded evenly.','Use the same controlled range on every rep and avoid hard elbow lockout.']},
+  // Light, technique-led scapular endurance work for Lower days; not loaded neck training.
+  neckFacePull:{name:'Cable Face Pull',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Rear delts','Mid/lower traps','External rotators'],img:[{url:'assets/neck-face-pull.svg'}],yt:'standing rope cable face pull eye level technique',
+    steps:['Attach the rope to a cable set around forehead height, hold the two ends and step back until there is gentle tension.','Stand tall with ribs stacked above the pelvis; keep your head and neck quiet.','Pull the rope toward your eyebrows/temples, letting elbows move out comfortably without arching your back.','Pause briefly, then extend the arms under control; stop before form deteriorates.'],
+    tips:['Use a light load and keep about 3 repetitions in reserve; this is not a maximal pulling exercise.','Keep the chin level. Stop if headache, neck pain or arm symptoms increase.']},
+  neckFarmerCarry:{name:"Dumbbell Farmer's Carry",type:'compound',group:'Back',neckSupport:true,timed:true,muscles:['Trapezius','Grip','Trunk stabilizers'],img:[{url:'assets/neck-farmers-carry.svg'}],yt:'dumbbell farmer carry proper posture light moderate weights',
+    steps:['Choose two manageable dumbbells. Stand tall with arms hanging naturally by your sides.','Keep the gaze forward, chin gently tucked and shoulders relaxed rather than forcibly squeezed back.','Walk with short, steady steps for 20–30 seconds, without leaning to either side.','Set the dumbbells down safely and rest before repeating.'],
+    tips:['Record seconds in the second log column; the weight entry is PER dumbbell.','Keep effort modest (around RPE 5–6/10). Heavy gripping is not the goal here. Stop if it increases neck pain.']},
+  neckYRaise:{name:'Prone Incline Dumbbell Y Raise',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Lower trapezius','Scapular stabilizers'],img:[{url:'assets/neck-y-raise.svg'}],yt:'prone incline dumbbell Y raise lower trapezius technique',
+    steps:['Set the bench to about 30–45° and lie face down with the chest supported; keep the neck in line with the torso.','Start with very light dumbbells (or empty hands), arms hanging naturally below the shoulders.','Lift both arms upward/outward in a Y shape with thumbs pointing up; keep the shoulders away from your ears.','Hold for 1–2 seconds, then lower slowly without shrugging.'],
+    tips:['Start with empty hands or roughly 0.5–2 kg per dumbbell, as tolerated; control matters more than loading.','Do not look up or extend your neck to complete the movement.']},
+  neckShrug:{name:'Light Dumbbell Shrug',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Upper trapezius','Scapular elevators'],img:[{url:'assets/neck-dumbbell-shrug.svg'}],yt:'standing dumbbell shrug controlled range without neck strain',
+    steps:['Stand tall holding a light dumbbell in each hand, arms relaxed at your sides.','Lift the shoulders smoothly straight up a comfortable amount; keep the head and neck still.','Pause about one second at the top, then lower slowly and completely.','Use a pain-free range and keep the movement controlled; do not roll your shoulders.'],
+    tips:['This is optional for symptom tolerance: 2 light sets only, around RPE 5–6/10, not to failure.','If your neck tightens or aches afterward, skip this movement rather than adding more weight.']},
   cableLateral:{name:'Cable Lateral Raise',type:'isolation',group:'Shoulders',muscles:['Side delts'],img:['Cable_Seated_Lateral_Raise','One-Arm_Side_Laterals','Side_Lateral_Raise'],yt:'cable lateral raise proper form',
     steps:['Set the pulley at the lowest position, stand side-on to the machine and grab the handle with your far hand.','Lean slightly forward and keep a small, fixed bend in your elbow.','Raise your arm out to the side to about shoulder height, leading with the elbow.','Lower slowly, keeping tension on the cable at the bottom.'],
     tips:['No shrugging — keep your traps relaxed.','Light and strict beats heavy and swinging.']},
+  standingCableLateral:{name:'Standing Single-Arm Cable Lateral Raise',type:'isolation',group:'Shoulders',side:true,muscles:['Side delts'],img:[{url:'https://cdn.shopify.com/s/files/1/1214/7132/files/mt-cable-lateral-raise-900x675_05489ca8-5457-451c-a109-c173f4409a85.jpg?v=1707499502'}],yt:'standing single arm cable lateral raise proper form',
+    steps:['Set one pulley at the lowest position and attach a single D-handle.','Stand upright beside the cable station, hold the frame with your inside hand if needed, and take the handle in the outside hand.','Keep a soft elbow bend and raise the arm out to the side until the upper arm reaches about shoulder height.','Lower slowly without letting the weight stack rest, then repeat on the other side.'],
+    tips:['This is performed one arm at a time; complete the prescribed reps on both sides.','Keep the torso still and do not shrug or swing the weight.']},
   reversePecDeck:{name:'Reverse Pec Deck',type:'isolation',group:'Shoulders',muscles:['Rear delts','Upper back'],img:['Reverse_Machine_Flyes','Reverse_Flyes'],yt:'reverse pec deck rear delt fly proper form',
     steps:['Set the handles to the rear position and adjust the seat so they\'re at shoulder height.','Face the pad with your chest against it and grab the handles.','Sweep your arms out and back in a wide arc with a slight bend in the elbows.','Return slowly until your hands are nearly together.'],
     tips:['Think "push your hands out wide," not "squeeze the shoulder blades."','Smooth, controlled reps — no jerking.']},
@@ -131,7 +150,13 @@ const EX={
     tips:['Slightly rounding your upper back and squeezing your glutes shifts it toward the glutes.','Stop at a straight line, not past it.']},
   seatedCalf:{name:'Seated Calf Raise',type:'isolation',group:'Calves',muscles:['Calves (soleus)'],img:['Seated_Calf_Raise','Barbell_Seated_Calf_Raise'],yt:'seated calf raise proper form',
     steps:['Sit with the pad snug on your lower thighs and the balls of your feet on the platform.','Release the safety and lower your heels into a deep stretch. Pause.','Push up as high as you can.','Lower under control.'],
-    tips:['Pause at the bottom of every rep.','Full range of motion beats heavy weight.']}
+    tips:['Pause at the bottom of every rep.','Full range of motion beats heavy weight.']},
+  cableCrunch:{name:'Cable Crunch',type:'isolation',group:'Abs',muscles:['Rectus abdominis'],img:['Cable_Crunch'],yt:'kneeling cable crunch proper form',loadMode:'external',
+    steps:['Attach a rope to a high pulley and kneel facing the stack.','Hold the rope beside your temples and keep your hips mostly fixed.','Curl your ribs toward your pelvis by flexing the trunk; do not turn it into a hip hinge.','Return slowly until the abs are stretched without letting the weight stack rest.'],
+    tips:['Think ribs toward pelvis, not elbows toward knees.','Use a controlled range and avoid pulling with your arms.']},
+  hangingKneeRaise:{name:'Hanging Knee Raise',type:'isolation',group:'Abs',muscles:['Rectus abdominis','Hip flexors'],img:['Hanging_Leg_Raise'],yt:'hanging knee raise posterior pelvic tilt proper form',loadMode:'bodyweight',
+    steps:['Hang from a pull-up bar with a comfortable grip and shoulders active.','Bring your knees up by curling your pelvis toward your ribs, not just swinging your thighs.','Pause briefly at the top, then lower slowly until your body is still.','Repeat without swinging or using momentum.'],
+    tips:['Start with bent knees; do not chase height by swinging.','The small pelvic curl at the top is the key part of the rep.']}
 };
 
 /* ---------- Equipment alternatives and machine guides ----------
@@ -165,11 +190,17 @@ const MACHINE_GUIDES={
 };
 
 const EXTRAS={
+  neckFacePull:{fa:'فیس پول سیم‌کش',hiddenVariants:['machine','free']},
+  neckFarmerCarry:{fa:'راه رفتن کشاورز با دمبل',hiddenVariants:['machine','free']},
+  neckYRaise:{fa:'نشر وای روی نیمکت شیب‌دار',hiddenVariants:['machine','free']},
+  neckShrug:{fa:'شراگ سبک دمبل (کول)',hiddenVariants:['machine','free']},
   inclineSmith:{fa:'پرس بالا سینه اسمیت',guide:'smithIncline',machine:{name:'Incline Chest Press Machine',fa:'پرس بالا سینه دستگاه',equipment:'Incline chest press machine',cue:'Keep the press angle upward and the handles aimed toward the upper chest.'},free:{name:'Incline Dumbbell Press',fa:'پرس بالا سینه دمبل',equipment:'Dumbbells + adjustable bench',cue:'Set the bench around 30° and use the same controlled press pattern.'}},
   chestRow:{fa:'زیربغل قایقی سینه‌تکیه‌دار',guide:'chestRow',machine:{name:'Seated Row Machine',fa:'قایقی دستگاه',equipment:'Selectorized or plate-loaded row',cue:'Use a neutral or medium grip and pull toward the lower ribs.'},free:{name:'Incline-Bench Dumbbell Row',fa:'قایقی دمبل روی میز شیب‌دار',equipment:'Dumbbells + incline bench',cue:'Lie chest-down on the bench so the torso stays supported.'}},
   latPulldown:{fa:'لت سیم‌کش دست خنثی',guide:'latPulldown',machine:{name:'Assisted Pull-Up Machine',fa:'بارفیکس کمکی دستگاه',equipment:'Assisted pull-up machine',cue:'Use enough assistance to stay in the programmed rep range.'},free:{name:'Pull-Up / Negative Pull-Up',fa:'بارفیکس / بارفیکس منفی',equipment:'Pull-up bar / bodyweight',cue:'Use full hangs; if full reps are not available, do slow controlled negatives.'}},
   machineChest:{fa:'پرس سینه دستگاه',guide:'chestPress',machine:{name:'Plate-Loaded Chest Press',fa:'پرس سینه صفحه‌ای',equipment:'Plate-loaded chest press',cue:'Match the handle height to mid-chest and keep the shoulder blades supported.'},free:{name:'Flat Dumbbell Bench Press',fa:'پرس سینه دمبل تخت',equipment:'Dumbbells + flat bench',cue:'Keep elbows around 45° from the torso and control the bottom stretch.'}},
+  lyingChestPress:{fa:'پرس سینه صفحه‌ای خوابیده',guide:'lyingChestPress',machine:{name:'Smith Machine Flat Bench Press',fa:'پرس سینه تخت اسمیت',equipment:'Smith machine + flat bench',cue:'Set the bench so the bar touches the mid-chest line; use the safety stops.'},free:{name:'Flat Barbell Bench Press',fa:'پرس سینه هالتر تخت',equipment:'Barbell + flat bench',cue:'Use a stable setup and a spotter or safety arms for hard sets.'}},
   cableLateral:{fa:'نشر جانب سیم‌کش',guide:'cableLateral',machine:{name:'Lateral Raise Machine',fa:'دستگاه نشر جانب',equipment:'Lateral raise machine',cue:'Place the pads just above the elbows and raise to about shoulder height.'},free:{name:'Dumbbell Lateral Raise',fa:'نشر جانب دمبل',equipment:'Dumbbells',cue:'Use light dumbbells, a soft elbow, and no shrugging or swinging.'}},
+  standingCableLateral:{fa:'نشر جانب سیم‌کش ایستاده تک‌دست',guide:'cableLateral',hiddenVariants:['machine'],free:{name:'Dumbbell Lateral Raise',fa:'نشر جانب دمبل',equipment:'Dumbbells',cue:'Stand tall, lead with the elbows and stop around shoulder height.'}},
   reversePecDeck:{fa:'فلای معکوس دستگاه',guide:'reversePecDeck',machine:{name:'Cable Rear-Delt Fly',fa:'نشر خم سیم‌کش',equipment:'Dual cable station',cue:'Set the pulleys around shoulder height and open the arms wide.'},free:{name:'Bent-Over Dumbbell Reverse Fly',fa:'نشر خم دمبل',equipment:'Dumbbells',cue:'Hinge forward, keep the torso still, and raise the arms out wide.'}},
   ropePushdown:{fa:'پشت بازو سیم‌کش طناب',guide:'tricepsCable',machine:{name:'Triceps Dip / Press Machine',fa:'دستگاه دیپ یا پرس پشت بازو',equipment:'Triceps press / assisted dip machine',cue:'Keep the torso controlled and finish by fully extending the elbows.'},free:{name:'Dumbbell Skull Crusher',fa:'پشت بازو خوابیده دمبل',equipment:'Dumbbells + bench',cue:'Keep upper arms mostly fixed and bend only at the elbows.'}},
   inclineCurl:{fa:'جلو بازو دمبل روی میز شیب‌دار',machine:{name:'Biceps Curl Machine',fa:'دستگاه جلو بازو',equipment:'Biceps curl machine',cue:'Align the elbows with the machine pivot and keep the upper arms supported.'},free:{name:'Standing Dumbbell Curl',fa:'جلو بازو دمبل ایستاده',equipment:'Dumbbells',cue:'Keep elbows close to the torso and avoid swinging.'}},
@@ -179,7 +210,7 @@ const EXTRAS={
   seatedLegCurl:{fa:'پشت پا نشسته',guide:'seatedLegCurl',machine:{name:'Lying Leg Curl',fa:'پشت پا خوابیده دستگاه',equipment:'Lying leg curl machine',cue:'Keep the hips down and curl the heels toward the glutes.'},free:{name:'Hamstring Walkout',fa:'واک‌اوت همسترینگ با وزن بدن',equipment:'Bodyweight',cue:'Bridge the hips up and slowly walk the heels away and back.'}},
   standingCalf:{fa:'ساق پا ایستاده',guide:'standingCalf',machine:{name:'Leg Press Calf Raise',fa:'ساق پا روی دستگاه پرس پا',equipment:'Leg press machine',cue:'Keep the knees nearly straight and move only through the ankles.'},free:{name:'Single-Leg Standing Calf Raise',fa:'ساق تک پا ایستاده',equipment:'Bodyweight or one dumbbell',cue:'Use a step for a deep stretch and hold a dumbbell when bodyweight is easy.'}},
   pullUp:{fa:'بارفیکس / بارفیکس کمکی',guide:'assistedPullup',machine:{name:'Neutral-Grip Lat Pulldown',fa:'لت سیم‌کش دست خنثی',equipment:'Lat pulldown machine',cue:'Drive the elbows down toward the ribs and control the full stretch.'},free:{name:'Bodyweight Pull-Up / Negative',fa:'بارفیکس وزن بدن / منفی',equipment:'Pull-up bar',cue:'Use clean bodyweight reps or slow 3–5 second negatives.'}},
-  dbBench:{fa:'پرس سینه دمبل تخت',machine:{name:'Chest Press Machine',fa:'پرس سینه دستگاه',equipment:'Chest press machine',cue:'Set the handles at mid-chest and press without rolling the shoulders forward.'},free:{name:'Barbell Bench Press',fa:'پرس سینه هالتر',equipment:'Barbell + bench',cue:'Use a stable setup, shoulder blades back, and a controlled touch on the chest.'}},
+  dbBench:{fa:'پرس سینه دمبل تخت',machine:{name:'Lying Plate-Loaded Chest Press',fa:'پرس سینه صفحه‌ای خوابیده',equipment:'Lying plate-loaded chest press',cue:'Lie back with the handles at mid-chest and load both sides evenly.'},free:{name:'Barbell Bench Press',fa:'پرس سینه هالتر',equipment:'Barbell + bench',cue:'Use a stable setup, shoulder blades back, and a controlled touch on the chest.'}},
   seatedRow:{fa:'قایقی سیم‌کش نشسته',guide:'seatedCableRow',machine:{name:'Chest-Supported Row Machine',fa:'قایقی سینه‌تکیه‌دار دستگاه',equipment:'Chest-supported row machine',cue:'Keep the chest on the pad and pull toward the lower ribs.'},free:{name:'One-Arm Dumbbell Row',fa:'قایقی تک دمبل',equipment:'Dumbbell + bench',cue:'Support yourself on a bench and pull the elbow toward the hip.'}},
   machineShoulder:{fa:'پرس سرشانه دستگاه',guide:'shoulderPress',machine:{name:'Plate-Loaded Shoulder Press',fa:'پرس سرشانه صفحه‌ای',equipment:'Plate-loaded shoulder press',cue:'Set the seat so the handles start near shoulder or chin height.'},free:{name:'Seated Dumbbell Shoulder Press',fa:'پرس سرشانه دمبل نشسته',equipment:'Dumbbells + bench',cue:'Use a back-supported bench and keep wrists stacked over elbows.'}},
   lowHighFly:{fa:'فلای سیم‌کش از پایین به بالا',guide:'lowHighCable',machine:{name:'Incline Chest Press Machine',fa:'پرس بالا سینه دستگاه',equipment:'Incline chest press machine',cue:'Not identical, but it preserves the upper-chest emphasis when cables are unavailable.'},free:{name:'Incline Dumbbell Fly',fa:'فلای بالا سینه دمبل',equipment:'Dumbbells + incline bench',cue:'Use a light load, fixed soft elbows, and a wide controlled arc.'}},
@@ -202,6 +233,8 @@ const VARIANT_META={
 };
 
 Object.assign(MACHINE_GUIDES,{
+  lyingChestPress:{en:'Lying Plate-Loaded Chest Press',fa:'پرس سینه صفحه‌ای خوابیده',about:'روی نیمکت دستگاه به پشت دراز می‌کشی و دسته‌های اهرمی را از کنار سینه به بالا و جلو فشار می‌دهی. وزنه با صفحه روی هر طرف دستگاه بارگذاری می‌شود.',setup:['نیمکت و دسته‌ها را طوری تنظیم کن که شروع حرکت نزدیک وسط سینه باشد.','قبل از شروع مطمئن شو صفحه‌های دو طرف برابر هستند و قفل صفحه‌ها بسته شده‌اند.','سر، پشت بالایی و لگن را روی پد نگه دار و کف پاها را محکم روی زمین بگذار.'],check:'اگر یک سمت سنگین‌تر یا دامنه دو دست نابرابر است، بارگذاری را اصلاح کن؛ شانه‌ها را از پد جدا نکن.'},
+  smithFlatBench:{en:'Smith Machine Flat Bench Press',fa:'پرس سینه تخت اسمیت',about:'نیمکت صاف زیر دستگاه اسمیت قرار می‌گیرد و میله روی ریل ثابت به سمت وسط سینه پایین می‌آید.',setup:['نیمکت را طوری قرار بده که میله در پایین حرکت به وسط سینه برسد، نه گردن.','قفل‌های ایمنی را کمی پایین‌تر از پایین‌ترین نقطه کنترل‌شده تنظیم کن.','کتف‌ها را عقب و پایین نگه دار، پاها روی زمین و مچ‌ها بالای ساعد باشند.'],check:'قبل از وزنه کاری با میله خالی مسیر را امتحان کن و مطمئن شو می‌توانی میله را در هر تکرار قفل کنی.'},
   inclineChestPress:{en:'Incline Chest Press Machine',fa:'دستگاه پرس بالا سینه',about:'صندلی و پشتی شیب‌دار دارد و دسته‌ها در مسیر مایل رو به بالا حرکت می‌کنند؛ هدف اصلی بخش بالایی سینه است.',setup:['صندلی را طوری تنظیم کن که دسته‌ها تقریباً هم‌سطح بالای سینه باشند.','کتف‌ها را به پشتی بچسبان و پاها را محکم روی زمین بگذار.','نقطه شروع را آن‌قدر عقب نبر که جلوی شانه کشش تیز یا ناراحت‌کننده بگیرد.'],check:'در تمام تکرارها مسیر دسته‌ها باید به سمت بالای سینه باشد و شانه‌ها از پشتی جدا نشوند.'},
   seatedRowMachine:{en:'Seated Row Machine',fa:'دستگاه قایقی نشسته',about:'صندلی و دسته‌های افقی دارد و معمولاً بدون کابل آزاد، روی یک مسیر ثابت یا نیمه‌آزاد کار می‌کند.',setup:['ارتفاع صندلی را طوری تنظیم کن که دسته‌ها مقابل پایین سینه یا دنده‌ها قرار بگیرند.','اگر پد سینه دارد، سینه را کامل روی آن نگه دار.','دسته خنثی یا متوسط را انتخاب کن و در شروع اجازه بده دست‌ها کامل کشیده شوند.'],check:'اگر برای کشیدن دسته‌ها مجبور می‌شوی تنه را عقب پرت کنی، وزنه زیاد است.'},
   lateralRaiseMachine:{en:'Lateral Raise Machine',fa:'دستگاه نشر جانب',about:'پدها معمولاً روی بیرون بازو یا نزدیک آرنج قرار می‌گیرند و حرکت بازوها را به طرفین هدایت می‌کنند.',setup:['صندلی را طوری تنظیم کن که محور شانه تقریباً با محور دستگاه هم‌سطح باشد.','پدها را کمی بالاتر از آرنج قرار بده و آرنج‌ها را نرم نگه دار.','از پایین حرکت بدون بالا انداختن شانه‌ها شروع کن.'],check:'بازوها را فقط تا حدود ارتفاع شانه بالا ببر؛ شراگ کردن یعنی وزنه بیش از حد سنگین است.'},
@@ -226,10 +259,12 @@ const ALT_DETAILS={
   },
   latPulldown:{machine:{reuse:'pullUp',guide:'assistedPullup',assist:true,loadMode:'assist',yt:'assisted pull up machine proper form'},free:{reuse:'pullUp',guide:null,loadMode:'bodyweight',assist:false,yt:'bodyweight pull up proper form'}},
   machineChest:{machine:{reuse:'machineChest',guide:'chestPress',img:['Leverage_Chest_Press','Machine_Bench_Press'],yt:'plate loaded chest press proper form'},free:{reuse:'dbBench',guide:null,yt:'flat dumbbell bench press proper form'}},
+  lyingChestPress:{machine:{name:'Smith Machine Flat Bench Press',guide:'smithFlatBench',img:[{url:'https://gymfitclub.ir/public/images/articles/upload/barbell-pin-press-muscles-2048x1238.png'}],yt:'smith machine flat bench press proper form',steps:['Place a flat bench under the Smith bar and set the safety stops just below your controlled bottom position.','Lie back with the bar over mid-chest, feet planted and shoulder blades retracted.','Lower the bar to the mid-chest line, then press up without bouncing or shrugging.','Re-rack the bar by rotating it securely into the hooks.'],tips:['Check the bar path with the empty bar first.','Use the safety stops; do not lower toward the neck.']},free:{name:'Flat Barbell Bench Press',guide:null,img:['Barbell_Bench_Press_-_Medium_Grip','Barbell_Bench_Press'],yt:'barbell bench press proper form',steps:['Lie on a flat bench with eyes under the bar and feet planted.','Retract the shoulder blades, unrack, and lower the bar toward the mid-chest.','Press up while keeping the upper back tight and wrists stacked over the forearms.','Use a spotter or correctly positioned safety arms for challenging sets.'],tips:['Keep the bar path controlled and avoid bouncing off the chest.','Do not force an exaggerated arch or let the shoulders roll forward.']}},
   cableLateral:{
     machine:{guide:'lateralRaiseMachine',img:['Seated_Side_Lateral_Raise','Side_Lateral_Raise'],yt:'lateral raise machine proper form',steps:['Adjust the seat so your shoulders line up naturally with the machine.','Place the pads near the outside of the elbows and keep a soft elbow bend.','Raise to about shoulder height, then lower slowly.'],tips:['Keep the traps relaxed.','Use a load you can move without momentum.']},
     free:{img:['Side_Lateral_Raise','One-Arm_Incline_Lateral_Raise'],yt:'dumbbell lateral raise proper form',steps:['Stand tall with light dumbbells at your sides.','Keep a small fixed elbow bend and raise the arms out to the sides.','Stop around shoulder height and lower slowly.'],tips:['Lead with the elbows, not the hands.','No swinging or shrugging.']}
   },
+  standingCableLateral:{free:{side:false,img:['Side_Lateral_Raise','One-Arm_Incline_Lateral_Raise'],yt:'dumbbell lateral raise proper form',steps:['Stand tall with light dumbbells at your sides.','Keep a small fixed elbow bend and raise the arms out to the sides.','Stop around shoulder height and lower slowly.'],tips:['Lead with the elbows, not the hands.','No swinging or shrugging.']}},
   reversePecDeck:{machine:{reuse:'rearDeltFly',guide:'rearDeltCable',yt:'cable rear delt fly proper form'},free:{img:['Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench','Dumbbell_Lying_Rear_Lateral_Raise'],yt:'bent over dumbbell rear delt fly proper form',steps:['Hinge forward with a flat, stable torso.','Hold light dumbbells with soft elbows and raise the arms out wide.','Stop when the upper arms are roughly in line with the torso, then lower slowly.'],tips:['Do not row the dumbbells toward the ribs.','Keep the neck relaxed and movement smooth.']}},
   ropePushdown:{
     machine:{guide:'tricepsPressMachine',img:['Dip_Machine','Triceps_Pushdown'],yt:'dip machine triceps proper form',steps:['Sit securely and grip the handles with elbows close to your sides.','Press the handles down by straightening the elbows.','Return under control until the elbows are comfortably bent.'],tips:['Keep the shoulders down and torso stable.','Finish with the triceps, not a bodyweight shove.']},
@@ -254,7 +289,7 @@ const ALT_DETAILS={
     free:{img:['Standing_Dumbbell_Calf_Raise','Standing_Calf_Raises'],yt:'single leg calf raise dumbbell proper form',loadMode:'bodyweight',side:true,steps:['Stand on one leg with the ball of the foot on a step or plate edge.','Lower the heel into a deep controlled stretch.','Rise as high as possible onto the toes; hold a dumbbell when bodyweight becomes easy.'],tips:['Use support for balance if needed.','Do not bounce through the bottom.']}
   },
   pullUp:{machine:{reuse:'latPulldown',guide:'latPulldown',yt:'neutral grip lat pulldown proper form'},free:{reuse:'pullUp',guide:null,loadMode:'bodyweight',assist:false,yt:'bodyweight pull up negative pull up proper form'}},
-  dbBench:{machine:{reuse:'machineChest',guide:'chestPress',yt:'machine chest press proper form'},free:{img:['Barbell_Bench_Press_-_Medium_Grip','Barbell_Bench_Press'],yt:'barbell bench press proper form',steps:['Lie on a flat bench with eyes under the bar and feet planted.','Retract the shoulder blades, unrack and lower the bar to the mid-to-lower chest.','Press the bar up while keeping the upper back tight.'],tips:['Keep wrists stacked over forearms.','Use safeties or a spotter when lifting heavy.']}},
+  dbBench:{machine:{reuse:'lyingChestPress',guide:'lyingChestPress',yt:'lying plate loaded chest press proper form'},free:{img:['Barbell_Bench_Press_-_Medium_Grip','Barbell_Bench_Press'],yt:'barbell bench press proper form',steps:['Lie on a flat bench with eyes under the bar and feet planted.','Retract the shoulder blades, unrack and lower the bar to the mid-to-lower chest.','Press the bar up while keeping the upper back tight.'],tips:['Keep wrists stacked over forearms.','Use safeties or a spotter when lifting heavy.']}},
   seatedRow:{machine:{reuse:'chestRow',guide:'chestRow',yt:'chest supported row machine proper form'},free:{img:['One-Arm_Dumbbell_Row','Dumbbell_Incline_Row'],yt:'one arm dumbbell row proper form',side:true,steps:['Support one hand and knee on a bench and hold a dumbbell in the free hand.','Let the shoulder reach forward slightly, then row the elbow toward the hip.','Pause briefly and lower to a full controlled stretch.'],tips:['Keep the torso square to the floor.','Do not twist to finish the rep.']}},
   machineShoulder:{machine:{reuse:'machineShoulder',guide:'shoulderPress',img:['Leverage_Shoulder_Press','Machine_Shoulder_Military_Press'],yt:'plate loaded shoulder press proper form'},free:{img:['Dumbbell_Shoulder_Press','Seated_Dumbbell_Press'],yt:'seated dumbbell shoulder press proper form',steps:['Sit on a bench with back support and bring dumbbells to shoulder level.','Keep wrists over elbows and press overhead.','Lower until the elbows are around or slightly below shoulder height.'],tips:['Keep the ribs down and back supported.','Do not force an excessively deep bottom position.']}},
   lowHighFly:{
@@ -283,37 +318,59 @@ const ALT_DETAILS={
 function variantKey(v){return VARIANT_KEYS.includes(v)?v:'primary'}
 function variantProfile(exId,v='primary'){
   v=variantKey(v);const base=EX[exId],x=EXTRAS[exId]||{};
-  if(v==='primary')return Object.assign({},base,{variant:'primary',fa:x.fa||'',equipment:'Programmed setup',guide:x.guide||null,loadMode:base.assist?'assist':'external'});
+  if(v==='primary')return Object.assign({},base,{variant:'primary',fa:x.fa||'',equipment:'Programmed setup',guide:x.guide||null,loadMode:base.loadMode||(base.assist?'assist':'external')});
   const a=x[v]||{},d=(ALT_DETAILS[exId]&&ALT_DETAILS[exId][v])||{},source=d.reuse&&EX[d.reuse]?EX[d.reuse]:base;
   const p=Object.assign({},source,d,{name:a.name||source.name,fa:a.fa||'',equipment:a.equipment||'',cue:a.cue||'',variant:v,type:base.type,group:base.group});
   p.muscles=d.muscles||source.muscles||base.muscles;p.img=d.img||source.img||base.img;p.steps=d.steps||source.steps||base.steps;p.tips=d.tips||source.tips||base.tips;p.yt=d.yt||source.yt||base.yt;
-  p.guide=d.guide===null?null:(d.guide||source.guide||null);p.side=d.side!=null?!!d.side:!!source.side;p.assist=d.assist!=null?!!d.assist:false;p.loadMode=d.loadMode||(p.assist?'assist':'external');
+  p.guide=d.guide===null?null:(d.guide||source.guide||null);p.side=d.side!=null?!!d.side:!!source.side;p.assist=d.assist!=null?!!d.assist:false;p.loadMode=d.loadMode||(p.assist?'assist':'external');p.timed=!!base.timed;p.neckSupport=!!base.neckSupport;
   return p;
 }
+const LOAD_BASIS={
+  per_dumbbell:{label:'Per dumbbell · هر دمبل',short:'Each DB',hint:'وزن یک دمبل را وارد کن؛ نه مجموع دو دمبل.'},
+  pair_dumbbells:{label:'Both dumbbells combined · مجموع دو دمبل',short:'DB pair',hint:'وزن هر دو دمبل را با هم جمع کن و وارد کن.'},
+  barbell_total:{label:'Full barbell total · کل هالتر',short:'Full bar',hint:'وزن کل میله به‌علاوه صفحه‌های هر دو طرف را وارد کن.'},
+  plates_per_side:{label:'Plates per side · صفحات یک طرف',short:'Per side',hint:'فقط مجموع صفحه‌های یک طرف دستگاه/میله را وارد کن.'},
+  plates_total:{label:'Plates both sides · مجموع دو طرف',short:'Both sides',hint:'صفحه‌های دو طرف را با هم جمع کن؛ وزن سورتمه/میله دستگاه را حساب نکن.'},
+  stack_total:{label:'Machine stack total · عدد استک دستگاه',short:'Stack',hint:'همان عددی را وارد کن که روی استک دستگاه می‌بینی.'},
+  cable_per_side:{label:'Each cable side · هر قرقره',short:'Each cable',hint:'وزن استک همان یک قرقره/سمت را وارد کن؛ دو طرف را با هم جمع نکن.'},
+  single_weight:{label:'One external weight · یک وزنه',short:'Single',hint:'وزن همان یک صفحه یا دمبلی را وارد کن.'},
+  assistance:{label:'Assistance weight · وزنه کمکی',short:'Assist',hint:'مقدار کمک دستگاه را وارد کن؛ کمتر شدن این عدد یعنی پیشرفت.'},
+  bodyweight:{label:'Bodyweight · وزن بدن',short:'Bodyweight',hint:'برای وزن بدن، فیلد وزنه را خالی بگذار؛ فقط تکرار را ثبت کن.'}
+};
+const BASIS_DEFAULTS={
+  'neckFacePull:primary':'stack_total','neckFarmerCarry:primary':'per_dumbbell','neckYRaise:primary':'per_dumbbell','neckShrug:primary':'per_dumbbell',
+  'inclineSmith:primary':'plates_total','inclineSmith:machine':'plates_per_side','inclineSmith:free':'per_dumbbell','chestRow:primary':'stack_total','chestRow:machine':'stack_total','chestRow:free':'per_dumbbell','latPulldown:primary':'stack_total','latPulldown:machine':'assistance','latPulldown:free':'bodyweight','machineChest:primary':'stack_total','machineChest:machine':'plates_per_side','machineChest:free':'per_dumbbell','lyingChestPress:primary':'plates_per_side','lyingChestPress:machine':'plates_per_side','lyingChestPress:free':'barbell_total','cableLateral:primary':'cable_per_side','cableLateral:machine':'stack_total','cableLateral:free':'per_dumbbell','standingCableLateral:primary':'cable_per_side','standingCableLateral:free':'per_dumbbell','reversePecDeck:primary':'stack_total','reversePecDeck:machine':'cable_per_side','reversePecDeck:free':'per_dumbbell','ropePushdown:primary':'stack_total','ropePushdown:machine':'stack_total','ropePushdown:free':'per_dumbbell','inclineCurl:primary':'per_dumbbell','inclineCurl:machine':'stack_total','inclineCurl:free':'per_dumbbell','hackSquat:primary':'plates_total','hackSquat:machine':'plates_total','hackSquat:free':'single_weight','rdl:primary':'barbell_total','rdl:machine':'barbell_total','rdl:free':'per_dumbbell','bulgarian:primary':'per_dumbbell','bulgarian:machine':'plates_total','bulgarian:free':'per_dumbbell','seatedLegCurl:primary':'stack_total','seatedLegCurl:machine':'stack_total','seatedLegCurl:free':'bodyweight','standingCalf:primary':'stack_total','standingCalf:machine':'plates_total','standingCalf:free':'single_weight','pullUp:primary':'assistance','pullUp:machine':'stack_total','pullUp:free':'bodyweight','dbBench:primary':'per_dumbbell','dbBench:machine':'plates_per_side','dbBench:free':'barbell_total','seatedRow:primary':'stack_total','seatedRow:machine':'stack_total','seatedRow:free':'per_dumbbell','machineShoulder:primary':'stack_total','machineShoulder:machine':'plates_per_side','machineShoulder:free':'per_dumbbell','lowHighFly:primary':'cable_per_side','lowHighFly:machine':'plates_per_side','lowHighFly:free':'per_dumbbell','rearDeltFly:primary':'cable_per_side','rearDeltFly:machine':'stack_total','rearDeltFly:free':'per_dumbbell','overheadExt:primary':'stack_total','overheadExt:machine':'stack_total','overheadExt:free':'per_dumbbell','preacherCurl:primary':'stack_total','preacherCurl:machine':'stack_total','preacherCurl:free':'barbell_total','hipThrust:primary':'barbell_total','hipThrust:machine':'stack_total','hipThrust:free':'single_weight','legPress:primary':'plates_total','legPress:machine':'plates_total','legPress:free':'single_weight','lyingLegCurl:primary':'stack_total','lyingLegCurl:machine':'stack_total','lyingLegCurl:free':'bodyweight','backExt:primary':'single_weight','backExt:machine':'stack_total','backExt:free':'per_dumbbell','seatedCalf:primary':'stack_total','seatedCalf:machine':'plates_total','seatedCalf:free':'single_weight','cableCrunch:primary':'stack_total','hangingKneeRaise:primary':'bodyweight'
+};
+function defaultLoadBasis(exId,variant='primary'){return BASIS_DEFAULTS[exId+':'+variant]||'stack_total'}
+function preferredLoadBasis(exId,variant='primary'){const key=exId+':'+variant;return typeof S!=='undefined'&&S.loadBasis&&LOAD_BASIS[S.loadBasis[key]]?S.loadBasis[key]:defaultLoadBasis(exId,variant)}
+const EXERCISE_NOTE_HINTS={neckFacePull:'فیس پول با طناب روی کابل، ۲ ست سبک. وزنه = عدد استک دستگاه. گردن خنثی و تکرارها کاملاً کنترل‌شده.',neckFarmerCarry:'راه رفتن کشاورز: وزن ثبت‌شده برای هر دمبل است؛ ستون دوم مدت حمل برحسب ثانیه (۲۰ تا ۳۰) است، نه تعداد قدم. با بار متوسط و گردن راحت شروع کن.',neckYRaise:'با نیمکت ۳۰ تا ۴۵ درجه، صورت رو به زمین؛ با دست خالی یا دمبل ۰.۵ تا ۲ کیلو (هر دمبل) شروع کن. دو ست ملایم، بدون بالا انداختن شانه.',neckShrug:'شراگ سبک با دمبل؛ وزن برای هر دمبل است. فعلاً ۲ ست کنترل‌شده، RPE حدود ۵ تا ۶. اگر درد یا گرفتگی گردن بیشتر شد، این حرکت را حذف کن.',inclineSmith:'پیش‌فرض فعلی: مجموع صفحات دو طرف اسمیت، بدون وزن میله. اگر عدد قبلی‌ات فقط برای یک طرف بوده، از منوی Weight entry آن را به «صفحات یک طرف» تغییر بده.',chestRow:'عدد روی استک دستگاه را وارد کن. اگر دستگاه صفحه‌ای است، حالت «صفحات یک طرف» را انتخاب کن.',latPulldown:'عدد روی استک دستگاه را وارد کن؛ دسته خنثی یا V-bar را ثابت نگه دار.',machineChest:'نسخه قدیمی پرس سینه پینی/نشسته: عدد کل استک دستگاه را ثبت کن.',lyingChestPress:'پرس سینه صفحه‌ای خوابیده: وزن صفحه‌های هر طرف دستگاه را جداگانه ثبت کن و دو طرف را متقارن بارگذاری کن.',cableLateral:'نسخه قدیمی نشر جانب سیم‌کش؛ عدد روی استک همان قرقره را ثبت کن.',standingCableLateral:'شروع تخمینی: ۲.۵–۵ کیلو روی هر قرقره؛ وزن همان یک سمت را وارد کن و هر دو دست را اجرا کن. این پیشنهاد شروع است، نه رکورد واقعی.',reversePecDeck:'اگر از Reverse Pec Deck استفاده می‌کنی، عدد کل استک دستگاه را ثبت کن؛ دامنه را کنترل‌شده نگه دار.',ropePushdown:'عدد روی استک کابل را ثبت کن؛ آرنج‌ها کنار بدن ثابت بمانند.',inclineCurl:'وزن هر دمبل را جداگانه ثبت کن، نه مجموع جفت دمبل‌ها.',hackSquat:'مجموع صفحه‌های دو طرف دستگاه را وارد کن؛ وزن سورتمه را حساب نکن.',rdl:'وزن کل هالتر را وارد کن: میله به‌علاوه صفحه‌های هر دو طرف.',bulgarian:'وزن هر دمبل را وارد کن؛ تکرارها برای هر پا هستند.',seatedLegCurl:'عدد روی استک دستگاه را وارد کن.',standingCalf:'عدد روی استک دستگاه را وارد کن؛ اگر صفحه‌ای است، مجموع صفحه‌های دو طرف را ثبت کن.',pullUp:'شروع تخمینی قبلی: ۲۵–۴۰ کیلو کمک دستگاه؛ این عدد مقدار کمک است، نه وزنه کشیده‌شده. کمتر شدن کمک یعنی پیشرفت. پیشنهاد شروع است، نه رکورد واقعی.',dbBench:'شروع تخمینی قبلی: ۱۲.۵–۱۵ کیلو برای هر دمبل، نه مجموع دو دمبل. این عدد پیشنهاد شروع است، نه رکورد ثبت‌شده.',seatedRow:'شروع تخمینی قبلی: ۳۰–۴۰ کیلو روی استک دستگاه. این عدد پیشنهاد شروع است، نه رکورد ثبت‌شده.',machineShoulder:'شروع تخمینی قبلی: ۲۰–۳۰ کیلو روی دستگاه. اگر دستگاه صفحه‌ای است، حالت «صفحات یک طرف» را انتخاب کن.',lowHighFly:'شروع تخمینی قبلی: ۵–۷.۵ کیلو برای هر قرقره/طرف؛ دو طرف را جداگانه تنظیم کن.',rearDeltFly:'شروع تخمینی قبلی: کابل ۲.۵–۵ کیلو برای هر طرف؛ در Reverse Pec Deck حدود ۱۵–۲۵ کیلو روی استک. این‌ها پیشنهاد شروع‌اند.',overheadExt:'شروع تخمینی قبلی: ۱۵–۲۵ کیلو روی استک کابل؛ آرنج‌ها ثابت بمانند.',preacherCurl:'شروع تخمینی قبلی: دستگاه ۱۵–۲۵ کیلو روی استک؛ با EZ-bar حدود ۱۵–۲۰ کیلو وزن کل هالتر.',hipThrust:'وزن کل هالتر را وارد کن: میله به‌علاوه صفحه‌های هر دو طرف.',legPress:'مجموع صفحه‌های دو طرف را وارد کن؛ وزن سورتمه دستگاه را حساب نکن.',lyingLegCurl:'عدد روی استک دستگاه را وارد کن.',backExt:'اگر صفحه یا دمبل نگه می‌داری، وزن همان یک وزنه را ثبت کن؛ وزن بدن را وارد نکن.',seatedCalf:'عدد روی استک دستگاه ساق نشسته را وارد کن.',cableCrunch:'عدد روی استک دستگاه را وارد کن و حرکت را با جمع کردن دنده‌ها به سمت لگن انجام بده.',hangingKneeRaise:'وزن بدن؛ زانوها را بالا بیاور و در بالای حرکت لگن را به سمت دنده‌ها جمع کن.'};
+const VARIANT_NOTE_HINTS={'machineChest:machine':'نسخه قدیمی پرس سینه صفحه‌ای: وزن هر طرف دستگاه را وارد کن.','machineChest:free':'پرس سینه دمبل تخت: وزن هر دمبل را جداگانه ثبت کن.','cableLateral:free':'نشر جانب دمبل: وزن هر دمبل را جداگانه ثبت کن؛ هر دو دست را با فرم یکسان اجرا کن.','lyingChestPress:machine':'پرس سینه تخت اسمیت: وزن صفحه‌های هر طرف را ثبت کن؛ قفل‌های ایمنی را تنظیم کن.','lyingChestPress:free':'پرس سینه هالتر تخت: وزن کل هالتر شامل میله و صفحه‌های هر دو طرف را وارد کن.','standingCableLateral:free':'نشر جانب دمبل: وزن هر دمبل را جداگانه ثبت کن؛ هر دو دست را با فرم یکسان اجرا کن.'};
+function noteSuggestion(exId,variant,basis){return VARIANT_NOTE_HINTS[exId+':'+variant]||EXERCISE_NOTE_HINTS[exId]||LOAD_BASIS[basis].hint}
+function visibleVariants(exId,selected){const hidden=(EXTRAS[exId]&&EXTRAS[exId].hiddenVariants)||[];return VARIANT_KEYS.filter(v=>!hidden.includes(v)||v===selected)}
 function itemVariant(it){return variantKey(it&&it.variant)}
 function selectedProfile(day,i,create=false){const plan=DAY[day].items[i],s=session(day,i,create);return variantProfile(plan.ex,itemVariant(s))}
 function variantTabsHTML(exId,selected){
-  return `<div class="variant-picker"><div class="variant-cap"><span>Equipment option</span><small>Saved for this workout only</small></div><div class="variant-tabs" role="tablist" aria-label="Exercise equipment option">${VARIANT_KEYS.map(v=>{const p=variantProfile(exId,v),m=VARIANT_META[v],on=v===selected;return `<button type="button" class="variant-tab press${on?' on':''}" role="tab" aria-selected="${on}" data-act="variant" data-v="${v}"><span>${m.short}</span><b>${p.name}</b><em dir="rtl">${p.fa||''}</em></button>`}).join('')}</div><p class="variant-rule">${IC.info}<span>Pick the version you actually perform today. Progress and history are tracked separately for each version.</span></p></div>`;
+  return `<div class="variant-picker"><div class="variant-cap"><span>Equipment option</span><small>Saved for this workout only</small></div><div class="variant-tabs" role="tablist" aria-label="Exercise equipment option">${visibleVariants(exId,selected).map(v=>{const p=variantProfile(exId,v),m=VARIANT_META[v],on=v===selected;return `<button type="button" class="variant-tab press${on?' on':''}" role="tab" aria-selected="${on}" data-act="variant" data-v="${v}"><span>${m.short}</span><b>${p.name}</b><em dir="rtl">${p.fa||''}</em></button>`}).join('')}</div><p class="variant-rule">${IC.info}<span>Pick the version you actually perform today. Progress and history are tracked separately for each version.</span></p></div>`;
 }
 function machineGuideHTML(profile){
   const g=profile&&profile.guide&&MACHINE_GUIDES[profile.guide];if(!g)return '';
   return `<details class="machine-help"><summary class="machine-summary press"><span class="machine-ic">${IC.info}</span><span class="machine-name"><small>Machine guide</small><b>${g.en}</b><em dir="rtl">${g.fa}</em></span><span class="machine-arrow">${IC.chev}</span></summary><div class="machine-panel"><p class="machine-about" dir="rtl">${g.about}</p><p class="h3">Setup</p><ol class="machine-steps" dir="rtl">${g.setup.map(x=>`<li><span>${x}</span></li>`).join('')}</ol><p class="machine-check">${IC.check}<span dir="rtl">${g.check}</span></p></div></details>`;
 }
 
-const GROUPS=['Chest','Back','Shoulders','Arms','Quads','Hamstrings','Glutes','Calves'];
+const GROUPS=['Chest','Back','Shoulders','Arms','Quads','Hamstrings','Glutes','Calves','Abs'];
 
 /* ---------- Program ---------- */
 const DAYS=[
-  {key:'sat',day:'Saturday',short:'Sat',dow:6,title:'Upper A',focus:'Back + Upper Chest',items:[
-    {ex:'inclineSmith',sets:4,reps:[6,10]},{ex:'chestRow',sets:4,reps:[6,10]},{ex:'latPulldown',sets:3,reps:[8,12]},{ex:'machineChest',sets:3,reps:[8,12]},
-    {ex:'cableLateral',sets:3,reps:[12,20]},{ex:'reversePecDeck',sets:3,reps:[12,20]},{ex:'ropePushdown',sets:3,reps:[10,15]},{ex:'inclineCurl',sets:3,reps:[10,15]}]},
-  {key:'sun',day:'Sunday',short:'Sun',dow:0,title:'Lower A',focus:'Hamstrings + Quads',items:[
-    {ex:'hackSquat',sets:3,reps:[6,10]},{ex:'rdl',sets:3,reps:[6,10]},{ex:'bulgarian',sets:2,reps:[8,12]},{ex:'seatedLegCurl',sets:3,reps:[10,15]},{ex:'standingCalf',sets:2,reps:[10,15]}]},
-  {key:'tue',day:'Tuesday',short:'Tue',dow:2,title:'Upper B',focus:'Back Width + Chest + Shoulders',items:[
+  {key:'sat',day:'Saturday',short:'Sat',dow:6,title:'Upper A',focus:'Back + Upper Chest + Abs',items:[
+    {ex:'inclineSmith',sets:4,reps:[6,10]},{ex:'chestRow',sets:4,reps:[6,10]},{ex:'latPulldown',sets:3,reps:[8,12]},{ex:'lyingChestPress',sets:3,reps:[8,12]},
+    {ex:'standingCableLateral',sets:3,reps:[12,20]},{ex:'reversePecDeck',sets:3,reps:[12,20]},{ex:'ropePushdown',sets:3,reps:[10,15]},{ex:'inclineCurl',sets:3,reps:[10,15]},{ex:'cableCrunch',sets:2,reps:[10,15]}]},
+  {key:'sun',day:'Sunday',short:'Sun',dow:0,title:'Lower A',focus:'Hamstrings + Quads + Scapular Endurance',items:[
+    {ex:'hackSquat',sets:3,reps:[6,10]},{ex:'rdl',sets:3,reps:[6,10]},{ex:'bulgarian',sets:2,reps:[8,12]},{ex:'seatedLegCurl',sets:3,reps:[10,15]},{ex:'standingCalf',sets:2,reps:[10,15]},{ex:'neckFacePull',sets:2,reps:[12,20]},{ex:'neckFarmerCarry',sets:2,reps:[20,30]}]},
+  {key:'tue',day:'Tuesday',short:'Tue',dow:2,title:'Upper B',focus:'Back Width + Chest + Shoulders + Abs',items:[
     {ex:'pullUp',sets:3,reps:[6,10]},{ex:'dbBench',sets:3,reps:[6,10]},{ex:'seatedRow',sets:3,reps:[8,12]},{ex:'machineShoulder',sets:2,reps:[8,12]},{ex:'lowHighFly',sets:3,reps:[10,15]},
-    {ex:'cableLateral',sets:3,reps:[12,20],ss:'A'},{ex:'rearDeltFly',sets:2,reps:[12,20],ss:'A'},{ex:'overheadExt',sets:3,reps:[10,15],ss:'B'},{ex:'preacherCurl',sets:3,reps:[10,15],ss:'B'}]},
-  {key:'thu',day:'Thursday',short:'Thu',dow:4,title:'Lower B',focus:'Glutes + Hamstrings + Quad Maintenance',items:[
-    {ex:'hipThrust',sets:3,reps:[6,10]},{ex:'legPress',sets:3,reps:[10,15]},{ex:'lyingLegCurl',sets:3,reps:[8,12]},{ex:'backExt',sets:2,reps:[10,15]},{ex:'seatedCalf',sets:2,reps:[10,15]}]}
+    {ex:'standingCableLateral',sets:3,reps:[12,20],ss:'A'},{ex:'rearDeltFly',sets:2,reps:[12,20],ss:'A'},{ex:'overheadExt',sets:3,reps:[10,15],ss:'B'},{ex:'preacherCurl',sets:3,reps:[10,15],ss:'B'},{ex:'hangingKneeRaise',sets:2,reps:[8,12]}]},
+  {key:'thu',day:'Thursday',short:'Thu',dow:4,title:'Lower B',focus:'Glutes + Hamstrings + Shoulder Support',items:[
+    {ex:'hipThrust',sets:3,reps:[6,10]},{ex:'legPress',sets:3,reps:[10,15]},{ex:'lyingLegCurl',sets:3,reps:[8,12]},{ex:'backExt',sets:2,reps:[10,15]},{ex:'seatedCalf',sets:2,reps:[10,15]},{ex:'neckYRaise',sets:2,reps:[12,15]},{ex:'neckShrug',sets:2,reps:[12,15]}]}
 ];
 const DAY=Object.fromEntries(DAYS.map(d=>[d.key,d]));
 const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -365,19 +422,21 @@ function ask(msg,okLabel='Confirm',danger=false){
 const finite=v=>typeof v==='number'&&isFinite(v)?v:null;
 function cleanW(x){
   if(!x||typeof x!=='object'||typeof x.id!=='string'||!ID_RE.test(x.id))return null;
-  const items=(Array.isArray(x.items)?x.items:[]).filter(it=>it&&typeof it.ex==='string'&&EX[it.ex]).map(it=>({
-    ex:it.ex,
-    variant:variantKey(it.variant),
-    sets:(Array.isArray(it.sets)?it.sets:[]).slice(0,20).map(s=>({w:normNum(s&&s.w).slice(0,7),r:normNum(s&&s.r).slice(0,4),d:!!(s&&s.d),t:finite(s&&s.t)}))
-  }));
-  const w={id:x.id,v:3,day:x.id.slice(11),date:x.id.slice(0,10),startedAt:finite(x.startedAt),finishedAt:finite(x.finishedAt),items,abs:!!x.abs,bw:finite(x.bw)||75,durOverride:finite(x.durOverride),updatedAt:finite(x.updatedAt)||0};
+  const items=(Array.isArray(x.items)?x.items:[]).filter(it=>it&&typeof it.ex==='string'&&EX[it.ex]).map(it=>{
+    const variant=variantKey(it.variant),notes={};
+    VARIANT_KEYS.forEach(v=>{const n=it.notes&&it.notes[v];if(n&&typeof n.text==='string'&&n.text.trim())notes[v]={text:n.text.slice(0,500),at:finite(n.at)||0}});
+    if(!Object.keys(notes).length&&typeof it.note==='string'&&it.note.trim())notes[variant]={text:it.note.slice(0,500),at:finite(it.noteAt)||0};
+    return {ex:it.ex,variant,loadBasis:LOAD_BASIS[it.loadBasis]?it.loadBasis:defaultLoadBasis(it.ex,variant),notes,sets:(Array.isArray(it.sets)?it.sets:[]).slice(0,20).map(s=>({w:normNum(s&&s.w).slice(0,7),r:normNum(s&&s.r).slice(0,4),d:!!(s&&s.d),t:finite(s&&s.t)}))};
+  });
+  const w={id:x.id,v:4,day:x.id.slice(11),date:x.id.slice(0,10),startedAt:finite(x.startedAt),finishedAt:finite(x.finishedAt),items,abs:!!x.abs,bw:finite(x.bw)||75,durOverride:finite(x.durOverride),updatedAt:finite(x.updatedAt)||0};
   if(x.deleted)w.deleted=true;
   return w;
 }
 function cleanS(s){
   s=s&&typeof s==='object'?s:{};
   const n=(v,lo,hi,d)=>{if(v==null||v==='')return d;v=Number(v);return isFinite(v)?Math.min(hi,Math.max(lo,v)):d};
-  return{unit:s.unit==='lb'?'lb':'kg',restC:n(s.restC,60,300,150),restI:n(s.restI,30,180,75),sound:s.sound!==false,wake:!!s.wake,bw:n(s.bw,30,250,75),updatedAt:n(s.updatedAt,0,9e15,0)};
+  const loadBasis={};if(s.loadBasis&&typeof s.loadBasis==='object')Object.entries(s.loadBasis).forEach(([k,v])=>{if(/^[a-zA-Z]+:(primary|machine|free)$/.test(k)&&LOAD_BASIS[v])loadBasis[k]=v});
+  return{unit:s.unit==='lb'?'lb':'kg',restC:n(s.restC,60,300,150),restI:n(s.restI,30,180,75),sound:s.sound!==false,wake:!!s.wake,bw:n(s.bw,30,250,75),loadBasis,updatedAt:n(s.updatedAt,0,9e15,0)};
 }
 
 /* =====================================================================
@@ -386,6 +445,7 @@ function cleanS(s){
    pushes them to the server when CONFIG.server.enabled is true.
    ===================================================================== */
 const hasActivity=w=>!!(w.abs||w.items.some(it=>it.sets.some(s=>s.d)));
+const hasRecordData=w=>!!(hasActivity(w)||w.items.some(it=>it.notes&&Object.values(it.notes).some(n=>n&&n.text)));
 const Store={
   W:LS.get('gp.workouts',{}),
   S:cleanS(LS.get('gp.settings',{})),
@@ -413,11 +473,11 @@ const Store={
   },
   ensure(day,date=activeDate(day)){
     const id=`${date}_${day}`,plan=DAY[day].items;let w=this.W[id];
-    if(!w||w.deleted){w=this.W[id]={id,v:3,day,date,startedAt:null,finishedAt:null,items:[],abs:false,bw:this.S.bw,durOverride:null,updatedAt:Date.now()};this.ver++}
+    if(!w||w.deleted){w=this.W[id]={id,v:4,day,date,startedAt:null,finishedAt:null,items:[],abs:false,bw:this.S.bw,durOverride:null,updatedAt:Date.now()};this.ver++}
     /* align stored items with the plan by exercise, not by position */
     const pool=w.items.slice();
-    w.items=plan.map(p=>{const k=pool.findIndex(x=>x.ex===p.ex);return k>=0?pool.splice(k,1)[0]:{ex:p.ex,variant:'primary',sets:[]}}).concat(pool);
-    plan.forEach((p,i)=>{const x=w.items[i];x.variant=variantKey(x.variant);while(x.sets.length<p.sets)x.sets.push({w:'',r:'',d:false,t:null})});
+    w.items=plan.map(p=>{const k=pool.findIndex(x=>x.ex===p.ex);return k>=0?pool.splice(k,1)[0]:{ex:p.ex,variant:'primary',loadBasis:preferredLoadBasis(p.ex,'primary'),notes:{},sets:[]}}).concat(pool);
+    plan.forEach((p,i)=>{const x=w.items[i];x.variant=variantKey(x.variant);x.loadBasis=LOAD_BASIS[x.loadBasis]?x.loadBasis:preferredLoadBasis(p.ex,x.variant);x.notes=x.notes&&typeof x.notes==='object'?x.notes:{};while(x.sets.length<p.sets)x.sets.push({w:'',r:'',d:false,t:null})});
     return w;
   },
   touch(w,now){
@@ -524,7 +584,7 @@ const Sync={
   },
   seed(){ // Upload the merged local history after first pulling remote records.
     if(!this.on)return;
-    Object.values(Store.W).forEach(w=>{if(hasActivity(w)||w.deleted)this.queue(w.deleted?'delete':'put',w)});
+    Object.values(Store.W).forEach(w=>{if(hasRecordData(w)||w.deleted)this.queue(w.deleted?'delete':'put',w)});
     this.queue('settings',S);
   }
 };
@@ -547,7 +607,7 @@ if(!LS.get('gp.migrated2',false)){const old=LS.get('gp.log',null);if(old)migrate
   const cut=Date.now()-CONFIG.tombstoneDays*864e5,old=iso(addDays(new Date(),-2)),pend=new Set(Sync.q.map(x=>x.key));let n=0;
   for(const id in Store.W){
     const w=Store.W[id];if(pend.has(id))continue;
-    if((w.deleted&&(w.updatedAt||0)<cut)||(!w.deleted&&!hasActivity(w)&&w.date<old)){delete Store.W[id];n++}
+    if((w.deleted&&(w.updatedAt||0)<cut)||(!w.deleted&&!hasRecordData(w)&&w.date<old)){delete Store.W[id];n++}
   }
   if(n){Store.ver++;LS.set('gp.workouts',Store.W)}
 })();
@@ -564,18 +624,20 @@ function itemFor(w,plan,i){const x=w.items[i];return x&&x.ex===plan[i].ex?x:(w.i
 function session(day,i,create){const w=create?Store.ensure(day):todayW(day);return w?itemFor(w,DAY[day].items,i):null}
 const repsTxt=it=>`${it.reps[0]}–${it.reps[1]}`;
 const isComp=it=>EX[it.ex].type==='compound';
-const restFor=it=>isComp(it)?S.restC:S.restI;
+const restFor=it=>EX[it.ex].neckSupport?75:(isComp(it)?S.restC:S.restI);
 const bwU=kg=>S.unit==='kg'?kg:kg*2.20462;
 function setTxt(s,ex){
   const r=esc(s.r)||'–',W=num(s.w),mode=ex&&ex.loadMode||'external';
   if(mode==='assist')return `${W?'−'+esc(s.w):'BW'}×${r}`;
   if(mode==='bodyweight')return `${W?'BW+'+esc(s.w):'BW'}×${r}`;
-  return (s.w?esc(s.w)+'×':'')+r;
+  return (s.w?esc(s.w)+'×':'')+r+(ex&&ex.timed?'s':'');
 }
 function load(ex,w,bw){const W=num(w),mode=ex&&ex.loadMode||'external',B=bwU(bw||S.bw);if(mode==='assist')return Math.max(0,B-W);if(mode==='bodyweight')return B+W;return W}
+function comparisonLoad(exId,ex,basis,w,bw){let value=load(ex,w,bw);if(basis==='pair_dumbbells')value/=2;else if(basis==='plates_per_side')value*=2;else if(basis==='cable_per_side'&&!ex.side&&['lowHighFly','rearDeltFly','reversePecDeck'].includes(exId))value*=2;return value}
 function topTxt(ex,top){
   if(!top)return '';const mode=ex&&ex.loadMode||'external';
   if(mode==='assist')return top.W?`${r1(top.W)} ${S.unit} assist × ${top.R}`:`Bodyweight × ${top.R}`;
+  if(ex&&ex.timed)return `${top.R} sec${top.W?' · '+r1(top.W)+' '+S.unit:''}`;
   if(mode==='bodyweight')return `${top.W?'BW + '+r1(top.W)+' '+S.unit:'Bodyweight'} × ${top.R}`;
   return top.W?`${r1(top.W)} ${S.unit} × ${top.R}`:'';
 }
@@ -583,7 +645,7 @@ function topTxt(ex,top){
 function doneCount(key,i){const s=session(key,i);return s?s.sets.slice(0,DAY[key].items[i].sets).filter(x=>x.d).length:0}
 function dayProgress(key){let done=0,total=0;DAY[key].items.forEach((it,i)=>{total+=it.sets;done+=doneCount(key,i)});return{done,total}}
 function nextIdx(key){const its=DAY[key].items;for(let i=0;i<its.length;i++)if(doneCount(key,i)<its[i].sets)return i;return -1}
-function estMin(key){let sec=0;DAY[key].items.forEach(it=>{sec+=it.sets*((EX[it.ex].side?90:45)+restFor(it))});return Math.max(5,Math.round(sec/300)*5)}
+function estMin(key){let sec=0;DAY[key].items.forEach(it=>{sec+=it.sets*((EX[it.ex].side?90:45)+restFor(it))});if(key==='sun'||key==='thu')sec+=CONFIG.absMinutes*60;return Math.max(5,Math.round(sec/300)*5)}
 function weekRange(){const s=satStart(new Date());return[iso(s),iso(addDays(s,6))]}
 function weekDone(key){
   const[ws,we]=weekRange(),plan=DAY[key].items;let done=0;
@@ -596,17 +658,17 @@ function weekDone(key){
 function doneKeysByWeek(){const m={};Store.list().forEach(w=>{const k=iso(satStart(parseISO(w.date)));(m[k]=m[k]||new Set()).add(w.day)});return m}
 function wStats(w){
   let sets=0,vol=0;const ts=[],groups={};
-  w.items.forEach(it=>{const ex=variantProfile(it.ex,itemVariant(it));it.sets.forEach(s=>{if(!s.d)return;sets++;vol+=load(ex,s.w,w.bw)*num(s.r)*(ex&&ex.side?2:1);if(s.t)ts.push(s.t);if(ex)groups[ex.group]=(groups[ex.group]||0)+1})});
-  let dur;
+  w.items.forEach(it=>{const ex=variantProfile(it.ex,itemVariant(it)),basis=it.loadBasis||defaultLoadBasis(it.ex,itemVariant(it));it.sets.forEach(s=>{if(!s.d)return;sets++;let factor=ex&&ex.side?2:1;if(basis==='plates_per_side')factor*=2;if(basis==='per_dumbbell'&&['dbBench','inclineCurl','bulgarian'].includes(it.ex))factor*=2;if(basis==='per_dumbbell'&&itemVariant(it)!=='primary'&&['rdl','chestRow','machineShoulder','lowHighFly','rearDeltFly','ropePushdown','backExt','reversePecDeck','machineChest','standingCableLateral','cableLateral'].includes(it.ex))factor*=2;if(basis==='cable_per_side'&&['lowHighFly','rearDeltFly','reversePecDeck'].includes(it.ex))factor*=2;if(!(ex&&ex.timed))vol+=load(ex,s.w,w.bw)*num(s.r)*factor;if(s.t)ts.push(s.t);if(ex)groups[ex.group]=(groups[ex.group]||0)+1})});
+  let dur;const absDuration=w.abs?((w.day==='sun'||w.day==='thu')?CONFIG.absMinutes:20):0;
   if(w.durOverride!=null)dur=w.durOverride;
   else{
     const start=w.startedAt||(ts.length?Math.min(...ts)-60000:0);
     if(start&&w.finishedAt)dur=(w.finishedAt-start)/60000;
-    else if(start&&ts.length)dur=(Math.max(...ts)-start)/60000+2+(w.abs?CONFIG.absMinutes:0);
-    else dur=sets*2.6+(w.abs?CONFIG.absMinutes:0);
+    else if(start&&ts.length)dur=(Math.max(...ts)-start)/60000+2+absDuration;
+    else dur=sets*2.6+absDuration;
   }
   dur=Math.round(Math.max(0,Math.min(CONFIG.maxSessionMin,dur)));
-  const absMin=w.abs?Math.min(CONFIG.absMinutes,dur):0;
+  const absMin=Math.min(absDuration,dur);
   const kcal=Math.round(((dur-absMin)*CONFIG.met.lifting+absMin*CONFIG.met.abs)*(w.bw||S.bw)/60);
   return{sets,vol:Math.round(vol),dur,kcal,groups};
 }
@@ -617,8 +679,8 @@ function exHistory(exId,excludeId,variant='primary'){
   const ex=variantProfile(exId,variant),out=[];
   Store.list().forEach(wk=>{if(wk.id===excludeId)return;wk.items.forEach(it=>{
     if(it.ex!==exId||itemVariant(it)!==variant)return;const ds=it.sets.filter(s=>s.d);if(!ds.length)return;
-    let top=null,best=0;
-    ds.forEach(s=>{const W=num(s.w),R=num(s.r),L=load(ex,s.w,wk.bw);best=Math.max(best,e1(L,R));if(!top||L>top.L||(L===top.L&&R>top.R))top={W,R,L}});
+    const basis=it.loadBasis||defaultLoadBasis(it.ex,variant);let top=null,best=0;
+    ds.forEach(s=>{const W=num(s.w),R=num(s.r),L=comparisonLoad(exId,ex,basis,s.w,wk.bw);best=Math.max(best,ex&&ex.timed?R:e1(L,R));if(!top||(ex&&ex.timed?(R>top.R||(R===top.R&&L>top.L)):(L>top.L||(L===top.L&&R>top.R))))top={W,R,L,basis}});
     out.push({wk,item:it,variant,sets:ds,top,e1:best});
   })});
   XH.set(key,out);return out;
@@ -718,12 +780,12 @@ function lineChart(pts,label){
 /* ---------- Images ---------- */
 const imgCache=new Map(),probeCache=new Map();
 function probe(url){
-  if(!probeCache.has(url))probeCache.set(url,new Promise(res=>{const im=new Image();im.onload=()=>res(true);im.onerror=()=>res(false);im.src=url}));
+  if(!probeCache.has(url)){const task=new Promise(res=>{const im=new Image();im.onload=()=>res(true);im.onerror=()=>{probeCache.delete(url);res(false)};im.src=url});probeCache.set(url,task)}
   return probeCache.get(url);
 }
 function resolveImg(exId,variant='primary'){
   variant=variantKey(variant);const key=exId+':'+variant,profile=variantProfile(exId,variant);
-  if(!imgCache.has(key))imgCache.set(key,(async()=>{for(const id of profile.img||[]){const a=IMG+id+'/0.jpg';if(await probe(a))return{a,b:IMG+id+'/1.jpg'}}return null})());
+  if(!imgCache.has(key)){const task=(async()=>{for(const entry of profile.img||[]){const a=typeof entry==='string'?IMG+entry+'/0.jpg':String(entry.url||entry.a||'');const b=typeof entry==='string'?IMG+entry+'/1.jpg':String(entry.b||'');if(a&&await probe(a))return{a,b:b||null}}return null})();imgCache.set(key,task);task.then(r=>{if(!r)imgCache.delete(key)}).catch(()=>imgCache.delete(key))}
   return imgCache.get(key);
 }
 
@@ -731,7 +793,7 @@ function loadThumbs(){
   $$('.thumb',app).forEach(async t=>{
     const r=await resolveImg(t.dataset.ex,t.dataset.var||'primary'),im=$('img',t);
     if(!r){t.classList.add('none');return}
-    im.onload=()=>t.classList.add('ok');im.src=r.a;
+    t.classList.remove('none');im.onload=()=>t.classList.add('ok');im.src=r.a;
     if(im.complete&&im.naturalWidth)t.classList.add('ok');
   });
 }
@@ -739,10 +801,11 @@ let mediaTimer=null,mediaPaused=RM;
 function stopMedia(){clearInterval(mediaTimer);mediaTimer=null}
 async function setupMedia(exId,variant='primary'){
   const m=$('#media',sbody);if(!m)return;variant=variantKey(variant);const profile=variantProfile(exId,variant);
+  const[f0,f1]=$$('.frame',m),tag=$('.media-tag',m),btn=$('.media-btn',m);m.classList.remove('failed','ready','anim');f0.classList.remove('on');f1.classList.remove('on');tag.style.display='';btn.style.display='';tag.textContent='Start';
   const r=await resolveImg(exId,variant);if(!m.isConnected)return;
-  const[f0,f1]=$$('.frame',m),tag=$('.media-tag',m),btn=$('.media-btn',m);
-  if(!r){m.classList.add('failed');$('.media-ph span',m).textContent='Image unavailable — watch the tutorial below';return}
+  if(!r){m.classList.add('failed');$('.media-ph span',m).textContent='Image unavailable — reconnect once to download and save it for offline use.';return}
   f0.alt=profile.name+', start position';f0.src=r.a;f0.classList.add('on');m.classList.add('ready');
+  if(!r.b){tag.style.display='none';btn.style.display='none';return}
   if(!(await probe(r.b))||!m.isConnected)return;
   f1.alt=profile.name+', end position';f1.src=r.b;m.classList.add('anim');
   let on=0;const paint=()=>{btn.innerHTML=mediaPaused?IC.play:IC.pause;btn.setAttribute('aria-label',mediaPaused?'Play animation':'Pause animation')};
@@ -802,7 +865,7 @@ function rowHTML(key,i,nx,started){
   return `<a class="ex-row press${complete?' complete':''}${started&&i===nx?' next':''}" href="#/${key}/${i}" data-i="${i}" style="--i:${i}">
     <span class="thumb" data-ex="${it.ex}" data-var="${variant}"><img alt="" decoding="async"><em>${i+1}</em></span>
     <span class="ex-main"><span class="up">Up next</span><span class="ex-name-line"><span class="ex-name">${ex.name}</span>${alt}</span>
-    <span class="ex-meta"><b>${it.sets} × ${repsTxt(it)}</b>${ex.side?' each leg':''} · ${isComp(it)?'Compound':'Isolation'}</span>
+    <span class="ex-meta"><b>${it.sets} × ${repsTxt(it)}${ex.timed?' sec':''}</b>${ex.side?' each side':''} · ${ex.neckSupport?'Endurance accessory':isComp(it)?'Compound':'Isolation'}</span>
     <span class="dots">${dotsHTML(key,i)}</span></span>${IC.chev}</a>`;
 }
 function headHTML(key){
@@ -829,12 +892,12 @@ function dayView(key){
       list+=`<div class="ss" style="--i:${start}"><div class="ss-label">${IC.link} Optional superset ${g}</div>${inner}</div>`}
     else{list+=rowHTML(key,k,nx,started);k++}
   }
-  const w=todayW(key),absOn=!!(w&&w.abs);
+  const w=todayW(key),absOn=!!(w&&w.abs),hasAbsApp=key==='sun'||key==='thu';
+  const absApp=hasAbsApp?`<div class="abs${absOn?' done':''}"><span class="abs-ic">${IC.abs}</span><span class="abs-main"><b>Abs · Six Pack in 30 Days</b><small>About 30 min · your current modified version</small></span><button class="chk" data-act="abs" aria-pressed="${absOn}" aria-label="Mark abs done">${IC.check}</button></div>`:'';
   return `<section class="view">
     <div class="day-head">${headHTML(key)}</div>
     <div class="ex-list stagger">${list}</div>
-    <div class="abs${absOn?' done':''}"><span class="abs-ic">${IC.abs}</span><span class="abs-main"><b>Abs · Six Pack in 30 Days</b><small>About 20 min · your current modified version</small></span>
-      <button class="chk" data-act="abs" aria-pressed="${absOn}" aria-label="Mark abs done">${IC.check}</button></div>
+    ${absApp}
     <div class="day-foot"><a class="ghost press" href="#/${key}/rules">${IC.info} Rules</a><button class="ghost press" data-act="reset">${IC.refresh} Reset today</button></div>
   </section>`;
 }
@@ -932,6 +995,8 @@ function exListHTML(){
     const last=topTxt(ex,l.top)||setTxt(l.sets[0],ex);
     rows.push(`<a class="x-row press" href="#/history/x/${it.ex}"><span class="ex-main"><span class="ex-name">${ex.name}</span><span class="ex-meta">Last: ${last} · ${fmtDate(l.wk.date)}</span></span>${tr?`<span class="tr ${tr}" aria-label="Trend ${tr}">${tr==='up'?IC.up:tr==='down'?IC.down:IC.minus}</span>`:''}${IC.chev}</a>`);
   }));
+  // Keep progress links for the two exercise IDs retired by this program update.
+  ['machineChest','cableLateral'].forEach(exId=>{if(seen.has(exId))return;seen.add(exId);const ex=EX[exId],h=exHistory(exId);if(!h.length)return;const l=h[h.length-1],pv=h[h.length-2],tr=!pv?'':l.e1>pv.e1?'up':l.e1<pv.e1?'down':'flat';const last=topTxt(ex,l.top)||setTxt(l.sets[0],ex);rows.push(`<a class="x-row press" href="#/history/x/${exId}"><span class="ex-main"><span class="ex-name">${ex.name} · Previous version</span><span class="ex-meta">Last: ${last} · ${fmtDate(l.wk.date)}</span></span>${tr?`<span class="tr ${tr}" aria-label="Trend ${tr}">${tr==='up'?IC.up:tr==='down'?IC.down:IC.minus}</span>`:''}${IC.chev}</a>`)});
   return rows.length?`<p class="label mt" style="--i:7">Exercise progress</p><div class="list" style="--i:7">${rows.join('')}</div>`:'';
 }
 function updateHistory(){
@@ -943,11 +1008,12 @@ function updateHistory(){
 }
 
 /* ---------- Sheets ---------- */
-function histRows(list,ex){return list.map(e=>`<div class="xh"><div class="xh-top"><span>${fmtDate(e.wk.date)} · ${relDays(e.wk.date)}</span>${e.pr?'<span class="pr">PR</span>':''}<em>${e.e1?'e1RM '+r1(e.e1):''}</em></div><div class="set-chips">${e.sets.map(s=>`<span>${setTxt(s,ex)}</span>`).join('')}</div></div>`).join('')}
+function histRows(list,ex){return list.map(e=>{const basis=e.item&&e.item.loadBasis&&LOAD_BASIS[e.item.loadBasis]?LOAD_BASIS[e.item.loadBasis].short:'';const note=e.item&&e.item.notes&&e.item.notes[e.variant]&&e.item.notes[e.variant].text;return `<div class="xh"><div class="xh-top"><span>${fmtDate(e.wk.date)} · ${relDays(e.wk.date)}</span>${basis?`<span class="load-basis-mini">${esc(basis)}</span>`:''}${e.pr?'<span class="pr">PR</span>':''}<em>${e.e1?(ex&&ex.timed?'Best '+r1(e.e1)+'s':'e1RM '+r1(e.e1)):''}</em></div><div class="set-chips">${e.sets.map(s=>`<span>${setTxt(s,ex)}</span>`).join('')}</div>${note?`<p class="xh-note" dir="auto">${esc(note)}</p>`:''}</div>`}).join('')}
+function exerciseNoteHistory(exId,variant,excludeId){return Object.values(Store.W).filter(w=>!w.deleted&&w.id!==excludeId).map(w=>{const item=w.items.find(it=>it.ex===exId&&itemVariant(it)===variant),n=item&&item.notes&&item.notes[variant];return n&&n.text?{date:w.date,text:n.text,at:n.at||0}:null}).filter(Boolean).sort((a,b)=>b.date.localeCompare(a.date)||(b.at-a.at)).slice(0,5)}
 function exSheet(day,i,tab){
   const d=DAY[day],it=d.items[i],sess=session(day,i),variant=itemVariant(sess),ex=variantProfile(it.ex,variant),comp=isComp(it);
   const s=session(day,i),hist=exHistory(it.ex,todayId(day),variant),prev=hist[hist.length-1]||null;
-  const n=doneCount(day,i),allDone=n>=it.sets,meta=VARIANT_META[variant];
+  const n=doneCount(day,i),allDone=n>=it.sets,meta=VARIANT_META[variant],basis=(s&&LOAD_BASIS[s.loadBasis]?s.loadBasis:preferredLoadBasis(it.ex,variant));
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.yt);
   const topHit=prev&&prev.sets.length>=it.sets&&prev.sets.slice(0,it.sets).every(x=>num(x.r)>=it.reps[1]);
   let rows='',carry='';
@@ -956,28 +1022,30 @@ function exSheet(day,i,tab){
     const mode=ex.loadMode||'external',weightLabel=mode==='assist'?'assistance':mode==='bodyweight'?'added weight':'weight';
     rows+=`<div class="set-row${c.d?' done':''}"><span class="set-n">${j+1}</span>
       <label class="fld"><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-f="w" data-s="${j}" value="${esc(c.w)}" placeholder="${esc(pw||'–')}" data-p="${esc(pw)}" data-p0="${esc(p.w||'')}" aria-label="Set ${j+1} ${weightLabel}"><em>${S.unit}</em></label>
-      <label class="fld"><input type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" data-f="r" data-s="${j}" value="${esc(c.r)}" placeholder="${esc(p.r||repsTxt(it))}" data-p="${esc(p.r||'')}" aria-label="Set ${j+1} reps"><em>reps</em></label>
+      <label class="fld"><input type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" data-f="r" data-s="${j}" value="${esc(c.r)}" placeholder="${esc(p.r||repsTxt(it))}" data-p="${esc(p.r||'')}" aria-label="Set ${j+1} ${ex.timed?'seconds':'reps'}"><em>${ex.timed?'sec':'reps'}</em></label>
       <button class="chk" data-act="check" data-s="${j}" aria-pressed="${c.d}" aria-label="Mark set ${j+1} done">${IC.check}</button></div>`;
     if(c.w)carry=c.w;
   }
   const histHTML=hist.length?`<p class="h3 mt">Previous ${meta.short.toLowerCase()} sessions</p><div class="xh-list">${histRows(hist.slice(-3).reverse(),ex)}</div><a class="ghost press rest-btn" href="#/${day}/x/${it.ex}/${variant}">${IC.chart} Full history for this version</a>`:'';
+  const noteNow=s&&s.notes&&s.notes[variant]?s.notes[variant].text:'';const noteHint=noteSuggestion(it.ex,variant,basis);const noteHistory=exerciseNoteHistory(it.ex,variant,todayId(day));
+  const notesHTML=`<details class="ex-notes"><summary><span>Exercise note</span><small>${noteNow?'Saved for this session':noteHistory.length?`${noteHistory.length} past notes`:'Add / review notes'}</small></summary><div class="note-inner"><textarea id="exerciseNote" dir="auto" rows="2" maxlength="500" placeholder="Add a note for this exercise…">${esc(noteNow||noteHint)}</textarea><div class="note-actions"><button class="ghost sm-btn press" data-act="save-note">Save note</button><small id="noteStatus">${noteNow?'Saved note can be edited.':'Starter suggestion · edit it, then save to keep it in history.'}</small></div>${noteHistory.length?`<details class="note-history"><summary>Previous notes (${noteHistory.length})</summary><div class="note-history-list">${noteHistory.map(x=>`<div class="note-history-item"><time>${fmtDate(x.date)}</time><p dir="auto">${esc(x.text)}</p></div>`).join('')}</div></details>`:''}</div></details>`;
   const pv=i>0?`<button class="nav-btn press" data-act="nav" data-to="${i-1}">${IC.back}<span><small>Previous</small>${selectedProfile(day,i-1).name}</span></button>`:'<span></span>';
   const nx=i<d.items.length-1?`<button class="nav-btn nx press${allDone?' go':''}" data-act="nav" data-to="${i+1}"><span><small>Next</small>${selectedProfile(day,i+1).name}</span>${IC.chev}</button>`
     :`<button class="nav-btn nx press${allDone?' go':''}" data-act="close"><span><small>Last exercise</small>Back to workout</span>${IC.check}</button>`;
   const variantNote=variant==='primary'?'Programmed movement':`${meta.label} · programmed slot: ${EX[it.ex].name}`;
   return `<div class="sx${tab===1?' log':''}">
-    <div class="media-wrap"><div class="media-in"><div class="media" id="media"><div class="media-ph">${IC.dumbbell}<span>Loading demo</span></div><img class="frame" alt=""><img class="frame" alt=""><span class="media-tag">Start</span><button class="media-btn" aria-label="Pause animation"></button></div></div></div>
+    <div class="media-wrap"><div class="media-in"><div class="media" id="media"><div class="media-ph">${IC.dumbbell}<span>Loading exercise image…</span></div><img class="frame" alt=""><img class="frame" alt=""><span class="media-tag">Start</span><button class="media-btn" aria-label="Pause animation"></button></div></div></div>
     <div class="sx-head">
-      <p class="eyebrow">Exercise ${i+1} of ${d.items.length} · ${comp?'Compound':'Isolation'}${it.ss?' · Superset '+it.ss:''}</p>
+      <p class="eyebrow">Exercise ${i+1} of ${d.items.length} · ${ex.neckSupport?'Endurance accessory':comp?'Compound':'Isolation'}${it.ss?' · Superset '+it.ss:''}</p>
       <div class="variant-context"><span class="variant-state ${variant}">${meta.short}</span><span>${variantNote}</span></div>
       <h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}
       <div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>
       ${variantTabsHTML(it.ex,variant)}
       <div class="specs">
         <div class="spec"><span>Sets</span><b>${it.sets}</b></div>
-        <div class="spec"><span>Reps</span><b>${repsTxt(it)}${ex.side?'/leg':''}</b></div>
+        <div class="spec"><span>${ex.timed?'Seconds':'Reps'}</span><b>${repsTxt(it)}${ex.timed?'s':''}${ex.side?'/side':''}</b></div>
         <div class="spec"><span>Rest</span><b>${fmt(restFor(it))}</b></div>
-        <div class="spec"><span>${comp?'Effort':'Last set'}</span><b>${comp?'1–2 RIR':'0–1 RIR'}</b></div>
+        <div class="spec"><span>${ex.neckSupport?'Effort':comp?'Effort':'Last set'}</span><b>${ex.neckSupport?'RPE 5–6':comp?'1–2 RIR':'0–1 RIR'}</b></div>
       </div>
       <div class="seg" style="--v:${tab}" role="tablist"><i class="pill"></i>
         <button role="tab" id="tab0" aria-controls="pan0" data-act="tab" data-v="0" class="${tab===0?'on':''}" aria-selected="${tab===0}">Technique</button>
@@ -991,14 +1059,16 @@ function exSheet(day,i,tab){
         ${machineGuideHTML(ex)}
         <p class="h3 technique-h3">How to do it</p><ol class="steps">${ex.steps.map(x=>`<li><span>${x}</span></li>`).join('')}</ol>
         <p class="h3">Form tips</p><ul class="tips">${ex.tips.map(x=>`<li>${IC.check}<span>${x}</span></li>`).join('')}</ul>
-        <p class="note">${IC.info}<span>${comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''}</span></p>
+        <p class="note">${IC.info}<span>${ex.neckSupport?'For neck and shoulder endurance, use a light-to-moderate load, move slowly and stop well before failure. Stop if symptoms increase.':comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''}</span></p>
       </div>
       <div class="panel" id="pan1" role="tabpanel" aria-labelledby="tab1" ${tab===1?'':'hidden'}>
-        ${topHit?`<div class="hint">${IC.trend}<span>${ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
+        ${topHit?`<div class="hint">${IC.trend}<span>${ex.neckSupport?'You reached the top of the range. Keep it comfortable; progress slowly only if symptoms remain settled.':ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
         ${ex.loadMode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:ex.loadMode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight. If you add external load, enter only the added weight.</p>`:''}
         ${prev?'':`<p class="first-log">First time logging this version. Its numbers will be tracked separately from the other equipment options.</p>`}
-        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}</span><span>Reps</span><span></span></div>
+        <div class="load-basis-box"><label for="loadBasis">Weight entry means</label><select id="loadBasis" class="basis-select">${Object.entries(LOAD_BASIS).map(([k,v])=>`<option value="${k}"${basis===k?' selected':''}>${v.label}</option>`).join('')}</select><small class="basis-hint">${LOAD_BASIS[basis].hint}</small></div>
+        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}<small class="weight-basis-head">${LOAD_BASIS[basis].short}</small></span><span>${ex.timed?'Seconds':'Reps'}</span><span></span></div>
         ${rows}
+        ${notesHTML}
         <button class="ghost press rest-btn" data-act="rest">${IC.clock} Start ${fmt(restFor(it))} rest timer</button>
         ${histHTML}
       </div>
@@ -1008,23 +1078,23 @@ function exSheet(day,i,tab){
 }
 function xSheet(exId,variant='primary'){
   variant=variantKey(variant);const ex=variantProfile(exId,variant),u=S.unit,h=exHistory(exId,null,variant).map(e=>Object.assign({},e));
-  const tabs=`<div class="history-variant-tabs">${VARIANT_KEYS.map(v=>{const p=variantProfile(exId,v),on=v===variant;return `<a class="history-variant press${on?' on':''}" href="#/${cur.base}/x/${exId}/${v}"><span>${VARIANT_META[v].short}</span><b>${p.name}</b></a>`}).join('')}</div>`;
+  const tabs=`<div class="history-variant-tabs">${visibleVariants(exId,variant).map(v=>{const p=variantProfile(exId,v),on=v===variant;return `<a class="history-variant press${on?' on':''}" href="#/${cur.base}/x/${exId}/${v}"><span>${VARIANT_META[v].short}</span><b>${p.name}</b></a>`}).join('')}</div>`;
   const head=`<p class="eyebrow">Exercise history · ${VARIANT_META[variant].label}</p><h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}<div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>${tabs}`;
   if(!h.length)return `<div class="sx"><div class="sx-pad">${head}<p class="first-log history-empty">No sets logged for this version yet. Choose another tab to see its separate history.</p></div></div>`;
   let best=0,heavy=null,run=0;
-  h.forEach(e=>{best=Math.max(best,e.e1);if(e.top&&(!heavy||e.top.L>heavy.L))heavy=e.top;e.pr=run>0&&e.e1>run;run=Math.max(run,e.e1)});
-  const last=h[h.length-1],topLbl=ex.loadMode==='assist'?'Effective load':'Top set';
-  const pts=h.slice(-24).map(e=>({lbl:fmtDate(e.wk.date),y:e.top?r1(e.top.L):0,y2:r1(e.e1)}));
-  const chart=pts.length>1?lineChart(pts,`${ex.name}: ${topLbl.toLowerCase()} and estimated 1RM over time`):'';
+  h.forEach(e=>{best=Math.max(best,e.e1);if(e.top&&(!heavy||(ex.timed?e.top.R>heavy.R:e.top.L>heavy.L)))heavy=e.top;e.pr=run>0&&e.e1>run;run=Math.max(run,e.e1)});
+  const last=h[h.length-1],topLbl=ex.timed?'Longest carry':ex.loadMode==='assist'?'Effective load':'Top set';
+  const pts=h.slice(-24).map(e=>({lbl:fmtDate(e.wk.date),y:ex.timed?r1(e.e1):(e.top?r1(e.top.L):0),y2:ex.timed?0:r1(e.e1)}));
+  const chart=pts.length>1?lineChart(pts,ex.timed?`${ex.name}: carry seconds over time`:`${ex.name}: ${topLbl.toLowerCase()} and estimated 1RM over time`):'';
   return `<div class="sx"><div class="sx-pad">${head}
     <div class="kpis mt-s">
-      <div class="kpi"><span>Best est. 1RM</span><b>${best?r1(best):'–'}${best?`<small>${u}</small>`:''}</b></div>
+      <div class="kpi"><span>${ex.timed?'Best hold':'Best est. 1RM'}</span><b>${best?r1(best):'–'}${best?`<small>${ex.timed?'sec':u}</small>`:''}</b></div>
       <div class="kpi"><span>${topLbl}</span><b class="sm">${heavy?topTxt(ex,heavy):'–'}</b></div>
       <div class="kpi"><span>Sessions</span><b>${h.length}</b></div>
       <div class="kpi"><span>Last trained</span><b class="sm">${relDays(last.wk.date)}</b></div>
     </div>
     ${ex.loadMode==='assist'?'<p class="first-log mt-s">Effective load = body weight minus assistance.</p>':''}
-    ${chart?`<div class="card flat"><div class="card-h"><b>Progress</b><span class="card-s"><i class="lg-l"></i>${topLbl}<i class="lg-l d"></i>Est. 1RM</span></div>${chart}</div>`:''}
+    ${chart?`<div class="card flat"><div class="card-h"><b>Progress</b><span class="card-s"><i class="lg-l"></i>${topLbl}${ex.timed?'':'<i class="lg-l d"></i>Est. 1RM'}</span></div>${chart}</div>`:''}
     <p class="h3 mt">All ${VARIANT_META[variant].short.toLowerCase()} sessions</p><div class="xh-list">${histRows(h.slice().reverse(),ex)}</div>
   </div></div>`;
 }
@@ -1033,7 +1103,7 @@ function wSheet(id){
   const st=wStats(w),d=DAY[w.day],dt=parseISO(w.date),u=S.unit,base=cur.base;
   const fresh=w.finishedAt&&Date.now()-w.finishedAt<10*60000;
   const ex=w.items.map((it,i)=>{const v=itemVariant(it),e=variantProfile(it.ex,v);if(!e)return'';const ds=it.sets.filter(s=>s.d),tag=v!=='primary'?`<span class="variant-mini ${v}">${VARIANT_META[v].short}</span>`:'';
-    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${base}/x/${it.ex}/${v}"><span>${e.name}</span>${tag}${IC.chev}</a>${e.fa?`<small class="wx-fa" dir="rtl">${e.fa}</small>`:''}<div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div></div></div>`}).join('');
+    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${base}/x/${it.ex}/${v}"><span>${e.name}</span>${tag}${IC.chev}</a>${e.fa?`<small class="wx-fa" dir="rtl">${e.fa}</small>`:''}<div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div>${ds.length&&it.loadBasis&&LOAD_BASIS[it.loadBasis]?`<small class="wx-basis">${esc(LOAD_BASIS[it.loadBasis].label)}</small>`:''}${it.notes&&it.notes[v]?`<small class="wx-note" dir="auto">${esc(it.notes[v].text)}</small>`:''}</div></div>`}).join('');
   return `<div class="sx"><div class="sx-pad">
     <p class="eyebrow">${fresh?'Workout complete':dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p>
     <h2 class="sx-title">${d?d.title:'Workout'}</h2>
@@ -1045,7 +1115,7 @@ function wSheet(id){
       <div class="kpi"><span>Sets</span><b>${st.sets}</b></div>
     </div>
     <p class="h3 mt">Exercises</p><div class="wx-list">${ex}
-      <div class="wx abs-line"><span class="wx-n">${w.abs?IC.check:'–'}</span><div class="ex-main"><b>Abs · Six Pack in 30 Days</b><small>${w.abs?'Done':'Not logged'}</small></div></div>
+      ${(w.day==='sun'||w.day==='thu'||w.abs)?`<div class="wx abs-line"><span class="wx-n">${w.abs?IC.check:'–'}</span><div class="ex-main"><b>Abs · Six Pack in 30 Days</b><small>${w.abs?'Done':'Not logged'}</small></div></div>`:''}
     </div>
     <p class="h3 mt">Duration</p><p class="first-log">Forgot to tap Finish? Correct the duration here and calories update automatically.</p>
     <div class="dur-edit"><label class="fld"><input type="text" inputmode="numeric" id="durIn" value="${st.dur}" aria-label="Duration in minutes"><em>min</em></label><button class="ghost press" data-act="savedur" data-id="${esc(w.id)}">Save</button></div>
@@ -1064,7 +1134,7 @@ function syncText(){
   return Sync.last?`Last synced ${relTime(Sync.last)}`:'Sync code saved on this device';
 }
 function settingsSheet(){
-  const ok='wakeLock' in navigator;
+  const ok='wakeLock' in navigator,imageCacheSupported='serviceWorker' in navigator;
   return `<div class="sx"><div class="sx-pad"><p class="eyebrow">Preferences</p><h2 class="sx-title">Settings</h2>
     <div class="srow"><span><b>Body weight</b><small>Used for calories and assisted-exercise load</small></span><div class="stp"><button data-act="bw" data-d="-1" aria-label="Decrease">${IC.minus}</button><span class="stp-v w" id="bwV" aria-live="polite">${bwTxt()}</span><button data-act="bw" data-d="1" aria-label="Increase">${IC.plus}</button></div></div>
     <div class="srow"><span><b>Weight unit</b><small>Label only, numbers aren't converted</small></span>
@@ -1073,6 +1143,7 @@ function settingsSheet(){
     <div class="srow"><span><b>Isolation rest</b><small>Plan: 60–90 s</small></span>${stepper('restI')}</div>
     <div class="srow"><span><b>Timer sound</b><small>Beep when rest is over</small></span>${swHTML('sound')}</div>
     <div class="srow"><span><b>Keep screen awake</b><small>${ok?'Stops your phone dimming mid-workout':'Not supported in this browser'}</small></span>${swHTML('wake')}</div>
+    <div class="srow"><span><b>Offline exercise images</b><small>Save the current program demos on Wi-Fi for use at the gym.</small></span><button class="ghost press sm-btn" data-act="cache-images" ${imageCacheSupported?'':'disabled'}>Save images</button></div>
     <div class="srow"><span><b>Cloud sync</b><small id="syncTxt">${syncText()}</small></span>${Sync.on?`<button class="ghost press sm-btn" data-act="sync">Sync now</button>`:`<span class="badge">${IC.cloud}${Sync.configured?'Connect':'Setup'}</span>`}</div>
     <div class="cloud-sync">
       ${!Sync.configured?`<p><b>Cloud setup needed</b></p><p>Finish the setup in Supabase, then enter the public Project URL and Publishable key in <code>cloud-config.js</code>. Your existing workout data stays on this device.</p>`:!Sync.token()?`<p><b>Connect this device</b></p><p>Enter the same private sync code on your phone and computer. No email or account is needed.</p><label for="syncCode">Private sync code</label><input class="cloud-input" id="syncCode" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your private sync code" maxlength="200"><button class="btn-primary press cloud-connect" data-act="cloud-connect">Connect this device</button><p class="cloud-msg" id="cloudMsg" aria-live="polite">The code is saved only in this browser. Keep it private.</p>`:`<p><b>Cloud sync is enabled on this device</b></p><p>Workout history stays local too. Disconnecting only removes this device's saved code; it does not delete cloud data.</p><div class="cloud-actions"><button class="ghost press" data-act="sync">${IC.refresh} Sync now</button><button class="ghost press" data-act="cloud-disconnect">Disconnect device</button></div><p class="cloud-msg" id="cloudMsg" aria-live="polite">${Sync.status==='error'?'Connection error. Check the code and internet.':'Use the same code on your other device.'}</p>`}
@@ -1089,7 +1160,8 @@ function rulesSheet(){
     ${r(IC.flame,'Effort','Main compound lifts: stop with 1–2 reps in reserve (RIR). Isolation exercises: the last set can reach 0–1 RIR. Don\'t regularly take heavy compound lifts to complete failure.')}
     ${r(IC.clock,'Rest','Main compound lifts: 2–3 minutes. Isolation exercises: 60–90 seconds. The rest timer starts automatically when you tick off a set.')}
     ${r(IC.trend,'Progression','When you reach the top of the rep range on all sets, increase the weight slightly (or reduce the assistance on assisted pull-ups). The set log flags this for you next session.')}
-    ${r(IC.abs,'Abs','After each workout, continue your Six Pack in 30 Days routine — about 20 minutes, using the same modified version you\'re currently doing.')}
+    ${r(IC.abs,'Abs','On Lower A and Lower B only, continue your modified Six Pack in 30 Days routine for about 30 minutes. Upper days use the short programmed cable-crunch and hanging-knee-raise finishers instead.')}
+    ${r(IC.info,'Neck / scapular accessories','On Lower days, the Face Pull, Farmer’s Carry, Y Raise and Light Shrug are comfort-led endurance accessories. Two sets each. Keep roughly RPE 5–6/10, do not take them to failure, and stop any movement that increases neck symptoms. Farmer’s Carry is recorded in seconds and per-dumbbell load.')}
     ${r(IC.info,'What RIR means','Reps in reserve: how many more clean reps you could have done. 2 RIR means you stopped with about two good reps left.')}
   </div></div>`;
 }
@@ -1207,11 +1279,11 @@ async function setVariant(v){
   const touched=item.sets.some(s=>s.d||s.w||s.r);
   if(touched&&!(await ask(`Switch to ${variantProfile(it.ex,v).name}? Logged sets for this exercise will be cleared so history stays accurate.`,'Switch & clear')))return;
   if(touched)item.sets=item.sets.map(()=>({w:'',r:'',d:false,t:null}));
-  item.variant=v;Store.touch(w,true);stopMedia();sbody.innerHTML=exSheet(day,i,curTab);setupMedia(it.ex,v);const row=$(`.ex-row[data-i="${i}"]`,app);if(row){row.outerHTML=rowHTML(day,i,nextIdx(day),dayProgress(day).done>0);loadThumbs()}updateDay(day);toast(`Using ${variantProfile(it.ex,v).name} today`);
+  item.variant=v;item.loadBasis=preferredLoadBasis(it.ex,v);Store.touch(w,true);stopMedia();sbody.innerHTML=exSheet(day,i,curTab);setupMedia(it.ex,v);const row=$(`.ex-row[data-i="${i}"]`,app);if(row){row.outerHTML=rowHTML(day,i,nextIdx(day),dayProgress(day).done>0);loadThumbs()}updateDay(day);toast(`Using ${variantProfile(it.ex,v).name} today`);
 }
 function checkComplete(key){
   const p=dayProgress(key);if(p.done<p.total)return false;
-  const w=todayW(key);toast(w&&w.abs?'All done. Tap Finish workout to save it.':'All sets done. Abs next, then tap Finish.');
+  const w=todayW(key),absApp=key==='sun'||key==='thu';toast(w&&w.abs?'All done. Tap Finish workout to save it.':absApp?'All sets done. Abs next, then tap Finish.':'All sets done. Tap Finish workout to save it.');
   return true;
 }
 function startWorkout(key){const w=Store.ensure(key);if(!w.startedAt){w.startedAt=Date.now();w.finishedAt=null;Store.touch(w,true)}}
@@ -1242,16 +1314,16 @@ function toggleSet(k,btn){
   updateDay(day);
   if(set.d){
     haptic(12);unlockAudio();
-    const W=num(set.w),R=num(set.r),c1=e1(load(ex,set.w,w.bw),R);
+    const W=num(set.w),R=num(set.r),c1=ex.timed?R:e1(load(ex,set.w,w.bw),R);
     let pr=false;
     if(c1>0){
       const before=Math.max(0,...exHistory(it.ex,w.id,variant).map(e=>e.e1));
-      const todayB=Math.max(0,...s.sets.filter(x=>x!==set&&x.d).map(x=>e1(load(ex,x.w,w.bw),num(x.r))));
+      const todayB=Math.max(0,...s.sets.filter(x=>x!==set&&x.d).map(x=>ex.timed?num(x.r):e1(load(ex,x.w,w.bw),num(x.r))));
       pr=before>0&&c1>before&&c1>todayB;
     }
     const nxt=DAY[day].items[i+1];
     startTimer(restFor(it),it.ss&&nxt&&nxt.ss===it.ss?`Superset: go to ${selectedProfile(day,i+1).name}`:all?'Rest · next exercise':`Rest · then set ${n+1} of ${it.sets}`,src);
-    if(pr){const mode=ex.loadMode||'external',msg=mode==='assist'?`New PR · ${R} reps ${W?`with ${r1(W)} ${S.unit} assist`:'at bodyweight'}`:mode==='bodyweight'?`New PR · ${W?'BW + '+r1(W)+' '+S.unit:'Bodyweight'} × ${R} on ${ex.name}`:`New PR · ${r1(W)} ${S.unit} × ${R} on ${ex.name}`;toast(msg);haptic([30,60,30,60,30])}
+    if(pr){const mode=ex.loadMode||'external',msg=ex.timed?`New duration PR · ${R}s on ${ex.name}`:mode==='assist'?`New PR · ${R} reps ${W?`with ${r1(W)} ${S.unit} assist`:'at bodyweight'}`:mode==='bodyweight'?`New PR · ${W?'BW + '+r1(W)+' '+S.unit:'Bodyweight'} × ${R} on ${ex.name}`:`New PR · ${r1(W)} ${S.unit} × ${R} on ${ex.name}`;toast(msg);haptic([30,60,30,60,30])}
     else if(all&&!checkComplete(day))toast(`${ex.name} complete`);
   }
 }
@@ -1260,7 +1332,7 @@ function propagateWeight(k,val){
 }
 function exportData(){
   Store.flush();
-  const blob=new Blob([JSON.stringify({app:'gp',v:3,exportedAt:new Date().toISOString(),workouts:Store.W,settings:S})],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'gp',v:4,exportedAt:new Date().toISOString(),workouts:Store.W,settings:S})],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`workout-backup-${iso()}.json`;
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
   toast('Backup downloaded');
@@ -1276,7 +1348,7 @@ function importData(file){
       else if(d.log)migrateLegacy(d.log,d.abs);
       else throw new Error();
       if(d.settings){Object.assign(S,cleanS(Object.assign({},S,d.settings)));Store.saveS()}
-      Object.values(Store.W).forEach(w=>{if(hasActivity(w)||w.deleted)Store.dirty.add(w.id)});
+      Object.values(Store.W).forEach(w=>{if(hasRecordData(w)||w.deleted)Store.dirty.add(w.id)});
       Store.ver++;Store.flush();
       sbody.innerHTML=settingsSheet();toast('Backup restored');
     }catch(e){toast("That file isn't a valid backup")}
@@ -1291,6 +1363,8 @@ root.addEventListener('click',async e=>{
   if(a==='sback')return history.back();
   if(a==='tab')return setTab(+el.dataset.v);
   if(a==='variant')return setVariant(el.dataset.v);
+  if(a==='save-note'){const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item),field=$('#exerciseNote',sbody),value=field?field.value.trim():'';item.notes=item.notes||{};if(value)item.notes[variant]={text:value,at:Date.now()};else delete item.notes[variant];Store.touch(w,true);const status=$('#noteStatus',sbody);if(status)status.textContent=value?'Saved to this exercise history.':'Note cleared.';const summary=$('.ex-notes summary small',sbody);if(summary)summary.textContent=value?'Saved for this session':'Add / review notes';toast(value?'Exercise note saved':'Exercise note cleared');return}
+  if(a==='cache-images'){if(!navigator.onLine){toast('Connect to Wi-Fi or a stable network first.');return}if(!('serviceWorker' in navigator)){toast('Offline image saving is not supported here.');return}el.disabled=true;el.textContent='Saving…';navigator.serviceWorker.ready.then(reg=>{if(!reg.active)throw new Error('Service worker is not active');const ch=new MessageChannel();ch.port1.onmessage=ev=>{el.disabled=false;el.textContent='Save images';const d=ev.data||{};toast(d.type==='CACHE_DONE'?`Offline images saved: ${d.saved}/${d.total}${d.failed?` · ${d.failed} unavailable`:''}`:'Image download did not finish; try again on Wi-Fi.')};reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'},[ch.port2])}).catch(err=>{el.disabled=false;el.textContent='Save images';toast('Could not start image download. Reopen the app and try again.')});return}
   if(a==='check')return toggleSet(+el.dataset.s,el);
   if(a==='nav')return navEx(+el.dataset.to);
   if(a==='rest'){const{day,i,it}=ctx(),ex=selectedProfile(day,i);unlockAudio();return startTimer(restFor(it),'Rest · '+ex.name)}
@@ -1330,7 +1404,10 @@ root.addEventListener('click',async e=>{
     Store.ver++;Store.flush();hideTimer();toast('History deleted');
   }
 });
-root.addEventListener('change',e=>{if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value=''}});
+root.addEventListener('change',e=>{
+  if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value='';return}
+  if(e.target.id==='loadBasis'){const basis=e.target.value;if(!LOAD_BASIS[basis]||!cur.sheet||cur.sheet.t!=='ex')return;const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item);item.loadBasis=basis;S.loadBasis=S.loadBasis||{};S.loadBasis[it.ex+':'+variant]=basis;Store.saveS();Store.touch(w,true);const hint=$('.basis-hint',sbody);if(hint)hint.textContent=LOAD_BASIS[basis].hint;const basisHead=$('.weight-basis-head',sbody);if(basisHead)basisHead.textContent=LOAD_BASIS[basis].short;toast('Weight entry method saved for this exercise');}
+});
 root.addEventListener('input',e=>{
   const f=e.target.dataset.f;if(!f||!cur.sheet||cur.sheet.t!=='ex')return;
   const{day,i}=ctx(),w=Store.ensure(day),k=+e.target.dataset.s;
@@ -1494,7 +1571,7 @@ async function applyWake(){
 /* ---------- Init ---------- */
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 addEventListener('hashchange',()=>{track();route()});
-addEventListener('online',()=>{Sync.flush();Sync.pull()});
+addEventListener('online',()=>{Sync.flush();Sync.pull();probeCache.clear();imgCache.clear();loadThumbs();if(cur.sheet&&cur.sheet.t==='ex'){const{day,i}=ctx();setupMedia(DAY[day].items[i].ex,itemVariant(session(day,i)))}});
 addEventListener('pagehide',()=>Store.flush());
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'){Store.flush();return}
@@ -1519,5 +1596,5 @@ applyWake();
 if(Sync.on){
   Sync.pull().then(ok=>{if(ok)Sync.flush()});
 }
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW registration failed',e)));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(reg=>{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>false);if(navigator.onLine&&reg.active&&(!navigator.connection||(!navigator.connection.saveData&&!['slow-2g','2g','3g'].includes(navigator.connection.effectiveType))))reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'})}).catch(e=>console.warn('SW registration failed',e)));
 window.GymApp={Store,Sync,CONFIG};
