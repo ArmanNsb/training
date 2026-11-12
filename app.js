@@ -70,16 +70,16 @@ const EX={
     steps:['Set the bench and handles so the grips begin level with the middle of your chest.','Lie back with your head, upper back and hips supported; plant both feet firmly on the floor.','Load both sides evenly, keep your shoulder blades gently pinned to the pad, and press the handles up and forward.','Lower slowly until you feel a comfortable chest stretch; do not bounce or let your shoulders roll forward.'],
     tips:['Keep both sides loaded evenly.','Use the same controlled range on every rep and avoid hard elbow lockout.']},
   // Light, technique-led scapular endurance work for Lower days; not loaded neck training.
-  neckFacePull:{name:'Cable Face Pull',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Rear delts','Mid/lower traps','External rotators'],img:[{url:'assets/neck-face-pull.svg'}],yt:'standing rope cable face pull eye level technique',
+  neckFacePull:{name:'Cable Face Pull',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Rear delts','Mid/lower traps','External rotators'],img:['Face_Pull'],yt:'standing rope cable face pull eye level technique',
     steps:['Attach the rope to a cable set around forehead height, hold the two ends and step back until there is gentle tension.','Stand tall with ribs stacked above the pelvis; keep your head and neck quiet.','Pull the rope toward your eyebrows/temples, letting elbows move out comfortably without arching your back.','Pause briefly, then extend the arms under control; stop before form deteriorates.'],
     tips:['Use a light load and keep about 3 repetitions in reserve; this is not a maximal pulling exercise.','Keep the chin level. Stop if headache, neck pain or arm symptoms increase.']},
-  neckFarmerCarry:{name:"Dumbbell Farmer's Carry",type:'compound',group:'Back',neckSupport:true,timed:true,muscles:['Trapezius','Grip','Trunk stabilizers'],img:[{url:'assets/neck-farmers-carry.svg'}],yt:'dumbbell farmer carry proper posture light moderate weights',
+  neckFarmerCarry:{name:"Dumbbell Farmer's Carry",type:'compound',group:'Back',neckSupport:true,timed:true,muscles:['Trapezius','Grip','Trunk stabilizers'],img:['Farmers_Walk'],yt:'dumbbell farmer carry proper posture light moderate weights',
     steps:['Choose two manageable dumbbells. Stand tall with arms hanging naturally by your sides.','Keep the gaze forward, chin gently tucked and shoulders relaxed rather than forcibly squeezed back.','Walk with short, steady steps for 20–30 seconds, without leaning to either side.','Set the dumbbells down safely and rest before repeating.'],
     tips:['Record seconds in the second log column; the weight entry is PER dumbbell.','Keep effort modest (around RPE 5–6/10). Heavy gripping is not the goal here. Stop if it increases neck pain.']},
-  neckYRaise:{name:'Prone Incline Dumbbell Y Raise',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Lower trapezius','Scapular stabilizers'],img:[{url:'assets/neck-y-raise.svg'}],yt:'prone incline dumbbell Y raise lower trapezius technique',
+  neckYRaise:{name:'Prone Incline Dumbbell Y Raise',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Lower trapezius','Scapular stabilizers'],img:[{url:'https://cdn.motra.com/exercise-assets/b3cbdab442/thumbnailOriginal.jpg'}],yt:'prone incline dumbbell Y raise lower trapezius technique',
     steps:['Set the bench to about 30–45° and lie face down with the chest supported; keep the neck in line with the torso.','Start with very light dumbbells (or empty hands), arms hanging naturally below the shoulders.','Lift both arms upward/outward in a Y shape with thumbs pointing up; keep the shoulders away from your ears.','Hold for 1–2 seconds, then lower slowly without shrugging.'],
     tips:['Start with empty hands or roughly 0.5–2 kg per dumbbell, as tolerated; control matters more than loading.','Do not look up or extend your neck to complete the movement.']},
-  neckShrug:{name:'Light Dumbbell Shrug',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Upper trapezius','Scapular elevators'],img:[{url:'assets/neck-dumbbell-shrug.svg'}],yt:'standing dumbbell shrug controlled range without neck strain',
+  neckShrug:{name:'Light Dumbbell Shrug',type:'isolation',group:'Shoulders',neckSupport:true,muscles:['Upper trapezius','Scapular elevators'],img:['Dumbbell_Shrug'],yt:'standing dumbbell shrug controlled range without neck strain',
     steps:['Stand tall holding a light dumbbell in each hand, arms relaxed at your sides.','Lift the shoulders smoothly straight up a comfortable amount; keep the head and neck still.','Pause about one second at the top, then lower slowly and completely.','Use a pain-free range and keep the movement controlled; do not roll your shoulders.'],
     tips:['This is optional for symptom tolerance: 2 light sets only, around RPE 5–6/10, not to failure.','If your neck tightens or aches afterward, skip this movement rather than adding more weight.']},
   cableLateral:{name:'Cable Lateral Raise',type:'isolation',group:'Shoulders',muscles:['Side delts'],img:['Cable_Seated_Lateral_Raise','One-Arm_Side_Laterals','Side_Lateral_Raise'],yt:'cable lateral raise proper form',
@@ -1364,7 +1364,26 @@ root.addEventListener('click',async e=>{
   if(a==='tab')return setTab(+el.dataset.v);
   if(a==='variant')return setVariant(el.dataset.v);
   if(a==='save-note'){const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item),field=$('#exerciseNote',sbody),value=field?field.value.trim():'';item.notes=item.notes||{};if(value)item.notes[variant]={text:value,at:Date.now()};else delete item.notes[variant];Store.touch(w,true);const status=$('#noteStatus',sbody);if(status)status.textContent=value?'Saved to this exercise history.':'Note cleared.';const summary=$('.ex-notes summary small',sbody);if(summary)summary.textContent=value?'Saved for this session':'Add / review notes';toast(value?'Exercise note saved':'Exercise note cleared');return}
-  if(a==='cache-images'){if(!navigator.onLine){toast('Connect to Wi-Fi or a stable network first.');return}if(!('serviceWorker' in navigator)){toast('Offline image saving is not supported here.');return}el.disabled=true;el.textContent='Saving…';navigator.serviceWorker.ready.then(reg=>{if(!reg.active)throw new Error('Service worker is not active');const ch=new MessageChannel();ch.port1.onmessage=ev=>{el.disabled=false;el.textContent='Save images';const d=ev.data||{};toast(d.type==='CACHE_DONE'?`Offline images saved: ${d.saved}/${d.total}${d.failed?` · ${d.failed} unavailable`:''}`:'Image download did not finish; try again on Wi-Fi.')};reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'},[ch.port2])}).catch(err=>{el.disabled=false;el.textContent='Save images';toast('Could not start image download. Reopen the app and try again.')});return}
+  if(a==='cache-images'){
+    if(!navigator.onLine){toast('Connect to Wi-Fi or a stable network first.');return}
+    if(!('serviceWorker' in navigator)){toast('Offline image saving is not supported here.');return}
+    el.disabled=true;el.textContent='Preparing…';
+    // User interaction improves the chance of persistent Cache Storage on installed Android PWAs.
+    if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>false);
+    navigator.serviceWorker.ready.then(reg=>{
+      if(!reg.active)throw new Error('Service worker is not active');
+      const ch=new MessageChannel();
+      ch.port1.onmessage=ev=>{
+        const d=ev.data||{};
+        if(d.type==='CACHE_PROGRESS'){el.textContent=`${d.done}/${d.total}`;return}
+        el.disabled=false;el.textContent='Save images';ch.port1.close();
+        if(d.type==='CACHE_DONE')toast(`Offline images ready: ${d.saved}/${d.total}${d.failed?` · ${d.failed} could not be saved`:''}`);
+        else toast('Image download did not finish; retry on Wi-Fi.');
+      };
+      reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'},[ch.port2]);
+    }).catch(()=>{el.disabled=false;el.textContent='Save images';toast('Could not start image download. Reopen the app and try again.')});
+    return
+  }
   if(a==='check')return toggleSet(+el.dataset.s,el);
   if(a==='nav')return navEx(+el.dataset.to);
   if(a==='rest'){const{day,i,it}=ctx(),ex=selectedProfile(day,i);unlockAudio();return startTimer(restFor(it),'Rest · '+ex.name)}
@@ -1596,5 +1615,5 @@ applyWake();
 if(Sync.on){
   Sync.pull().then(ok=>{if(ok)Sync.flush()});
 }
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(reg=>{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>false);if(navigator.onLine&&reg.active&&(!navigator.connection||(!navigator.connection.saveData&&!['slow-2g','2g','3g'].includes(navigator.connection.effectiveType))))reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'})}).catch(e=>console.warn('SW registration failed',e)));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(reg=>{if(navigator.onLine&&reg.active&&(!navigator.connection||(!navigator.connection.saveData&&!['slow-2g','2g','3g'].includes(navigator.connection.effectiveType))))reg.active.postMessage({type:'CACHE_EXERCISE_IMAGES'})}).catch(e=>console.warn('SW registration failed',e)));
 window.GymApp={Store,Sync,CONFIG};
