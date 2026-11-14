@@ -9,6 +9,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training">
 <title>4-Day Program</title>
+<script>
+/* Shows startup errors on screen instead of a blank page */
+window.__errs=[];
+addEventListener('error',function(e){window.__errs.push((e.message||'Load error')+(e.filename?' @ '+e.filename.split('/').pop()+':'+e.lineno:'')+(e.target&&(e.target.src||e.target.href)?' '+(e.target.src||e.target.href):''))},true);
+addEventListener('unhandledrejection',function(e){window.__errs.push('Promise: '+(e.reason&&e.reason.message||e.reason))});
+addEventListener('load',function(){setTimeout(function(){var a=document.getElementById('app');if(a&&!a.children.length){a.innerHTML='<div id="bootErr" style="padding:24px;color:#fff;font:15px/1.6 system-ui"><b>The app could not start.</b><pre style="white-space:pre-wrap;color:#f88;font-size:12px">'+(window.__errs.join('\n')||'No error message was reported.').replace(/</g,'&lt;')+'</pre><a href="rescue.html" style="color:#c5f467">Open the repair page</a></div>'}},1500)});
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
