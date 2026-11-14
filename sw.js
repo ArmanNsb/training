@@ -1,5 +1,5 @@
 /* Bump SHELL on every deploy so phones pick up the new files */
-const SHELL='gp-shell-v12-photo-cache';
+const SHELL='gp-shell-v13-ui-tabs';
 const CDN='gp-cdn-v5-photo-cache';
 const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg','icon-180.png','icon-192.png','icon-512.png','icon-512-maskable.png','cloud-config.js'];
 const CDN_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','raw.githubusercontent.com','cdn.zyloai.app','cdn.shopify.com','gymfitclub.ir','cdn.motra.com'];

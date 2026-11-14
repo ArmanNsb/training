@@ -1033,7 +1033,7 @@ function exSheet(day,i,tab){
   const nx=i<d.items.length-1?`<button class="nav-btn nx press${allDone?' go':''}" data-act="nav" data-to="${i+1}"><span><small>Next</small>${selectedProfile(day,i+1).name}</span>${IC.chev}</button>`
     :`<button class="nav-btn nx press${allDone?' go':''}" data-act="close"><span><small>Last exercise</small>Back to workout</span>${IC.check}</button>`;
   const variantNote=variant==='primary'?'Programmed movement':`${meta.label} · programmed slot: ${EX[it.ex].name}`;
-  return `<div class="sx${tab===1?' log':''}">
+  return `<div class="sx${tab===0?' log':''}">
     <div class="media-wrap"><div class="media-in"><div class="media" id="media"><div class="media-ph">${IC.dumbbell}<span>Loading exercise image…</span></div><img class="frame" alt=""><img class="frame" alt=""><span class="media-tag">Start</span><button class="media-btn" aria-label="Pause animation"></button></div></div></div>
     <div class="sx-head">
       <p class="eyebrow">Exercise ${i+1} of ${d.items.length} · ${ex.neckSupport?'Endurance accessory':comp?'Compound':'Isolation'}${it.ss?' · Superset '+it.ss:''}</p>
@@ -1048,29 +1048,33 @@ function exSheet(day,i,tab){
         <div class="spec"><span>${ex.neckSupport?'Effort':comp?'Effort':'Last set'}</span><b>${ex.neckSupport?'RPE 5–6':comp?'1–2 RIR':'0–1 RIR'}</b></div>
       </div>
       <div class="seg" style="--v:${tab}" role="tablist"><i class="pill"></i>
-        <button role="tab" id="tab0" aria-controls="pan0" data-act="tab" data-v="0" class="${tab===0?'on':''}" aria-selected="${tab===0}">Technique</button>
-        <button role="tab" id="tab1" aria-controls="pan1" data-act="tab" data-v="1" class="${tab===1?'on':''}" aria-selected="${tab===1}">Log sets <span class="cnt" id="logCnt">${n}/${it.sets}</span></button>
+        <button role="tab" id="tab0" aria-controls="pan0" data-act="tab" data-v="0" class="${tab===0?'on':''}" aria-selected="${tab===0}">Log sets <span class="cnt" id="logCnt">${n}/${it.sets}</span></button>
+        <button role="tab" id="tab1" aria-controls="pan1" data-act="tab" data-v="1" class="${tab===1?'on':''}" aria-selected="${tab===1}">Technique</button>
       </div>
     </div>
     <div class="sx-body">
       <div class="panel" id="pan0" role="tabpanel" aria-labelledby="tab0" ${tab===0?'':'hidden'}>
+        ${topHit?`<div class="hint">${IC.trend}<span>${ex.neckSupport?'You reached the top of the range. Keep it comfortable; progress slowly only if symptoms remain settled.':ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
+        ${ex.loadMode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:ex.loadMode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight. If you add external load, enter only the added weight.</p>`:''}
+        ${prev?'':`<p class="first-log">First time logging this version. Its numbers will be tracked separately from the other equipment options.</p>`}
+        <div class="load-basis-box">
+          <div class="load-basis-heading"><label for="loadBasis">Weight recorded as</label><span class="load-basis-caption">For this exercise</span></div>
+          <div class="basis-select-wrap"><select id="loadBasis" class="basis-select" aria-describedby="loadBasisHint">${Object.entries(LOAD_BASIS).map(([k,v])=>`<option value="${k}"${basis===k?' selected':''}>${v.label.split(' · ')[0]}</option>`).join('')}</select><span class="basis-select-arrow" aria-hidden="true">${IC.chev}</span></div>
+          <p class="basis-hint" id="loadBasisHint" dir="rtl">${LOAD_BASIS[basis].hint}</p>
+        </div>
+        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}<small class="weight-basis-head">${LOAD_BASIS[basis].short}</small></span><span>${ex.timed?'Seconds':'Reps'}</span><span></span></div>
+        ${rows}
+        ${notesHTML}
+        <button class="ghost press rest-btn" data-act="rest">${IC.clock} Start ${fmt(restFor(it))} rest timer</button>
+        ${histHTML}
+      </div>
+      <div class="panel" id="pan1" role="tabpanel" aria-labelledby="tab1" ${tab===1?'':'hidden'}>
         <a class="yt press" href="${yt}" target="_blank" rel="noopener"><span class="yt-ic">${IC.yt}</span>Watch ${ex.name} tutorial<span class="ext">${IC.ext}</span></a>
         ${ex.cue?`<div class="variant-cue">${IC.info}<span>${ex.cue}</span></div>`:''}
         ${machineGuideHTML(ex)}
         <p class="h3 technique-h3">How to do it</p><ol class="steps">${ex.steps.map(x=>`<li><span>${x}</span></li>`).join('')}</ol>
         <p class="h3">Form tips</p><ul class="tips">${ex.tips.map(x=>`<li>${IC.check}<span>${x}</span></li>`).join('')}</ul>
         <p class="note">${IC.info}<span>${ex.neckSupport?'For neck and shoulder endurance, use a light-to-moderate load, move slowly and stop well before failure. Stop if symptoms increase.':comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''}</span></p>
-      </div>
-      <div class="panel" id="pan1" role="tabpanel" aria-labelledby="tab1" ${tab===1?'':'hidden'}>
-        ${topHit?`<div class="hint">${IC.trend}<span>${ex.neckSupport?'You reached the top of the range. Keep it comfortable; progress slowly only if symptoms remain settled.':ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
-        ${ex.loadMode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:ex.loadMode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight. If you add external load, enter only the added weight.</p>`:''}
-        ${prev?'':`<p class="first-log">First time logging this version. Its numbers will be tracked separately from the other equipment options.</p>`}
-        <div class="load-basis-box"><label for="loadBasis">Weight entry means</label><select id="loadBasis" class="basis-select">${Object.entries(LOAD_BASIS).map(([k,v])=>`<option value="${k}"${basis===k?' selected':''}>${v.label}</option>`).join('')}</select><small class="basis-hint">${LOAD_BASIS[basis].hint}</small></div>
-        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}<small class="weight-basis-head">${LOAD_BASIS[basis].short}</small></span><span>${ex.timed?'Seconds':'Reps'}</span><span></span></div>
-        ${rows}
-        ${notesHTML}
-        <button class="ghost press rest-btn" data-act="rest">${IC.clock} Start ${fmt(restFor(it))} rest timer</button>
-        ${histHTML}
       </div>
     </div>
     <div class="sx-nav">${pv}${nx}</div>
@@ -1239,7 +1243,7 @@ function openSheet(r){
   if(sheetOpen&&key===sheetKey)return;
   const exSwap=sheetOpen&&t==='ex'&&(sheetKey||'').startsWith('ex:');
   const dir=exSwap?(r.sheet.i>+sheetKey.split(':')[2]?'fwd':'back'):(sheetOpen?'swap':'');
-  if(t==='ex'&&!exSwap&&!(sheetKey||'').startsWith('x:'))curTab=dayProgress(r.base).done>0?1:0;
+  if(t==='ex')curTab=0; // Open every exercise, including next/previous, on Log sets.
   stopMedia();
   sbody.innerHTML=t==='ex'?exSheet(r.base,r.sheet.i,curTab):t==='settings'?settingsSheet():t==='rules'?rulesSheet():t==='w'?wSheet(r.sheet.id):xSheet(r.sheet.id,r.sheet.variant);
   sbody.scrollTop=0;
@@ -1270,7 +1274,7 @@ function ctx(){const day=cur.base,i=cur.sheet.i;return{day,i,it:DAY[day].items[i
 function setTab(v){
   curTab=v;
   const sx=$('.sx',sbody),seg=$('.seg',sbody);
-  sx.classList.toggle('log',v===1);seg.style.setProperty('--v',v);
+  sx.classList.toggle('log',v===0);seg.style.setProperty('--v',v);
   $$('button',seg).forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   $$('.panel',sbody).forEach((p,k)=>{p.hidden=k!==v;if(k===v){p.classList.remove('in');void p.offsetWidth;p.classList.add('in')}});
 }
