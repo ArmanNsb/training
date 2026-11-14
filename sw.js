@@ -1,5 +1,5 @@
 /* Bump SHELL on every deploy so phones pick up the new files */
-const SHELL='gp-shell-v13-ui-tabs';
+const SHELL='gp-shell-v14-fresh-install';
 const CDN='gp-cdn-v5-photo-cache';
 const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg','icon-180.png','icon-192.png','icon-512.png','icon-512-maskable.png','cloud-config.js'];
 const CDN_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','raw.githubusercontent.com','cdn.zyloai.app','cdn.shopify.com','gymfitclub.ir','cdn.motra.com'];
@@ -41,7 +41,7 @@ async function cacheExerciseImages(port){
   return{saved,failed,total:EXERCISE_IMAGES.length};
 }
 self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(SHELL).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));
+  e.waitUntil(caches.open(SHELL).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',e=>{
   // Keep older CDN caches: they may contain images already downloaded on the phone.
@@ -62,7 +62,7 @@ self.addEventListener('fetch',e=>{
   if(u.origin===location.origin){
     e.respondWith(caches.open(SHELL).then(async c=>{
       const hit=await c.match(r,{ignoreSearch:true});
-      const net=fetch(r).then(res=>{if(res.ok)c.put(r,res.clone());return res}).catch(()=>null);
+      const net=fetch(r.url,{cache:'no-cache',credentials:'same-origin'}).then(res=>{if(res.ok)c.put(r,res.clone());return res}).catch(()=>null);
       if(hit){e.waitUntil(net);return hit}
       const res=await net;
       if(res)return res;
