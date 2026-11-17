@@ -44,6 +44,8 @@ const IC={
   upload:sv('<path d="M12 20V9M7 14l5-5l5 5M5 4h14"/>'),
   abs:sv('<rect x="6" y="3" width="12" height="18" rx="5"/><path d="M12 3v18M6 9h12M6 15h12"/>'),
   calendar:sv('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>'),
+  edit:sv('<path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'),
+  note:sv('<path d="M6 3h8l4 4v14H6z"/><path d="M13 3v5h5M9 13h6M9 17h4"/>'),
   chart:sv('<path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/>'),
   trophy:sv('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M5 9a2 2 0 0 1 0-4h2M19 9a2 2 0 0 0 0-4h-2"/>'),
   alert:sv('<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'),
@@ -375,6 +377,11 @@ const DAYS=[
 const DAY=Object.fromEntries(DAYS.map(d=>[d.key,d]));
 const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const IMG='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+/* Editing a past day: #/sat~2026-11-14 opens that workout for that date */
+let EDIT=null; // {day,date} while a past date is open
+const K=key=>EDIT&&EDIT.day===key?`${key}~${EDIT.date}`:key;
+const isEditing=key=>!!(EDIT&&EDIT.day===key);
+const fmtLong=s=>parseISO(s).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
 const ID_RE=new RegExp('^\\d{4}-\\d{2}-\\d{2}_('+DAYS.map(d=>d.key).join('|')+')$');
 
 /* ---------- Helpers ---------- */
@@ -615,6 +622,7 @@ if(!LS.get('gp.migrated2',false)){const old=LS.get('gp.log',null);if(old)migrate
 /* ---------- Domain logic ---------- */
 /* An unfinished workout started late keeps its date past midnight */
 function activeDate(day){
+  if(EDIT&&EDIT.day===day)return EDIT.date;
   const y=iso(addDays(new Date(),-1)),w=Store.get(`${y}_${day}`);
   return w&&w.startedAt&&!w.finishedAt&&Date.now()-w.startedAt<CONFIG.overnightHours*36e5?y:iso();
 }
@@ -836,11 +844,15 @@ function homeView(){
     if(w&&w.finishedAt){const st=wStats(w);hero=`<div class="hero"><p class="eyebrow">${date}</p><h1>Workout complete</h1><p class="sub">${today.title} · ${fmtDur(st.dur)} · ${fmtInt(st.kcal)} kcal. ${nextTxt}</p><a class="btn-secondary press" href="#/${today.key}">Review ${today.title}${IC.chev}</a></div>`}
     else hero=`<div class="hero"><p class="eyebrow">${date}</p><h1>${today.title}</h1><p class="sub">${today.focus} · ${today.items.length} exercises · ~${estMin(today.key)} min</p><a class="btn-primary press" href="#/${today.key}"><span class="cta-t">${p.done?`Continue · ${p.done}/${p.total} sets`:'Open workout'}</span>${IC.chev}</a></div>`;
   }else hero=`<div class="hero"><p class="eyebrow">${date}</p><h1>Rest day</h1><p class="sub">Recover well. ${nextTxt}</p><a class="btn-secondary press" href="#/${next.key}">Preview ${next.title}${IC.chev}</a></div>`;
-  const week=[6,0,1,2,3,4,5].map(d=>{
-    const t=DAYS.find(x=>x.dow===d),w=t?weekDone(t.key):null,full=w&&w.done>=w.total;
-    const cls=['wk',t?'train press':'',d===dow?'today':'',full?'full':''].join(' ');
-    const inner=`<span class="wk-l">${DN[d]}</span><span class="wk-d">${full?IC.check:t?t.title.replace('Upper','Up').replace('Lower','Lo'):'Rest'}</span>`;
-    return t?`<a class="${cls}" href="#/${t.key}" aria-label="${t.day}, ${t.title}${full?', done':''}">${inner}</a>`:`<div class="${cls}">${inner}</div>`;
+  const byDate={};Store.list().forEach(w=>{(byDate[w.date]=byDate[w.date]||[]).push(w)});
+  const shortT=t=>t.replace('Upper','Up').replace('Lower','Lo');
+  const week=[0,1,2,3,4,5,6].map(k=>{
+    const d=addDays(now,-k),di=iso(d),t=DAYS.find(x=>x.dow===d.getDay()),ws=byDate[di],done=ws?ws[ws.length-1]:null,dd=done&&DAY[done.day];
+    const key=dd?done.day:t?t.key:null,miss=!done&&t&&k>0;
+    const cls=['wk',key?'train press':'',k===0?'today':'',done?'full':'',miss?'miss':''].join(' ');
+    const inner=`<span class="wk-l">${k===0?'Today':DN[d.getDay()]}</span><span class="wk-n">${d.getDate()}</span><span class="wk-d">${dd?shortT(dd.title):t?shortT(t.title):'Rest'}</span>`;
+    const href=key?(k===0?`#/${key}`:`#/${key}~${di}`):'';
+    return key?`<a class="${cls}" href="${href}" aria-label="${fmtLong(di)}, ${(dd||t).title}${done?', done':miss?', not logged':''}">${inner}</a>`:`<div class="${cls}">${inner}</div>`;
   }).join('');
   const wt=aggregate(period('week',0)).tot;
   const cards=DAYS.map((d,k)=>{
@@ -853,8 +865,8 @@ function homeView(){
       ${w.done?ring(w.done/w.total):IC.chev}</a>`;
   }).join('');
   return `<section class="view"><div class="stagger">${hero}
-    <p class="label mt" style="--i:1">This week</p><div class="week" style="--i:1">${week}</div>
-    <a class="wk-sum press" href="#/history" style="--i:2"><div><b>${wt.count}<small>/4</small></b><span>Workouts</span></div><div><b>${fmtDur(wt.dur)}</b><span>Time</span></div><div><b>${fmtInt(wt.kcal)}</b><span>kcal</span></div>${IC.chev}</a>
+    <p class="label mt" style="--i:1">Last 7 days</p><div class="week" style="--i:1">${week}</div>
+    <a class="wk-sum press" href="#/history" style="--i:2"><div><b>${wt.count}<small>/4</small></b><span>This week</span></div><div><b>${fmtDur(wt.dur)}</b><span>Time</span></div><div><b>${fmtInt(wt.kcal)}</b><span>kcal</span></div>${IC.chev}</a>
     <p class="label" style="--i:3">Workouts</p>${cards}
     <a class="rules-link press" href="#/rules" style="--i:8">${IC.info}<span><b>Execution rules</b><small>Effort, rest and progression</small></span>${IC.chev}</a></div></section>`;
 }
@@ -862,7 +874,7 @@ function dotsHTML(key,i){const it=DAY[key].items[i],s=session(key,i);let h='';fo
 function rowHTML(key,i,nx,started){
   const it=DAY[key].items[i],sess=session(key,i),variant=itemVariant(sess),ex=variantProfile(it.ex,variant),complete=doneCount(key,i)>=it.sets;
   const alt=variant!=='primary'?`<span class="variant-mini ${variant}">${VARIANT_META[variant].short}</span>`:'';
-  return `<a class="ex-row press${complete?' complete':''}${started&&i===nx?' next':''}" href="#/${key}/${i}" data-i="${i}" style="--i:${i}">
+  return `<a class="ex-row press${complete?' complete':''}${started&&i===nx?' next':''}" href="#/${K(key)}/${i}" data-i="${i}" style="--i:${i}">
     <span class="thumb" data-ex="${it.ex}" data-var="${variant}"><img alt="" decoding="async"><em>${i+1}</em></span>
     <span class="ex-main"><span class="up">Up next</span><span class="ex-name-line"><span class="ex-name">${ex.name}</span>${alt}</span>
     <span class="ex-meta"><b>${it.sets} × ${repsTxt(it)}${ex.timed?' sec':''}</b>${ex.side?' each side':''} · ${ex.neckSupport?'Endurance accessory':isComp(it)?'Compound':'Isolation'}</span>
@@ -870,16 +882,17 @@ function rowHTML(key,i,nx,started){
 }
 function headHTML(key){
   const d=DAY[key],p=dayProgress(key),its=d.items,isT=d.dow===new Date().getDay(),nx=nextIdx(key),wk=weekDone(key),w=todayW(key);
-  const started=!!(w&&(w.startedAt||p.done||w.abs)),finished=!!(w&&w.finishedAt);
-  const eyebrow=d.day+(isT?' · Today':'')+(!started&&wk.done>=wk.total?' · Done this week':'');
+  const started=!!(w&&(w.startedAt||p.done||w.abs)),finished=!!(w&&w.finishedAt),ed=isEditing(key);
+  const eyebrow=ed?`Editing · ${fmtLong(EDIT.date)}`:d.day+(isT?` · ${fmtDate(iso())} · Today`:'')+(!started&&wk.done>=wk.total?' · Done this week':'');
   let cta;
-  if(finished){const st=wStats(w);cta=`<div class="done-card"><span class="done-badge">${IC.check}</span><span><b>Workout complete</b><small>${fmtDur(st.dur)} · ${fmtInt(st.kcal)} kcal · ${fmtK(st.vol)} ${S.unit} · ${st.sets} sets</small></span></div><a class="btn-secondary press mt-s" href="#/${key}/w/${esc(w.id)}">View summary${IC.chev}</a>`}
+  if(ed)cta=`<p class="edit-note">${IC.edit}<span>${p.done?'Changes are saved as you type. Tap an exercise to change its sets.':'Tap an exercise to enter the sets you did on this day.'}</span></p><button class="btn-primary press" data-act="save-edit"><span class="cta-t">Save</span>${IC.check}</button>`;
+  else if(finished){const st=wStats(w);cta=`<div class="done-card"><span class="done-badge">${IC.check}</span><span><b>Workout complete</b><small>${fmtDur(st.dur)} · ${fmtInt(st.kcal)} kcal · ${fmtK(st.vol)} ${S.unit} · ${st.sets} sets</small></span></div><a class="btn-secondary press mt-s" href="#/${K(key)}/w/${esc(w.id)}">View summary${IC.chev}</a>`}
   else if(started){
     const el=w.startedAt?(Date.now()-w.startedAt)/60000:0;
     cta=`<p class="live"><i></i><span id="elapsed">In progress · ${fmtDur(el)}</span></p>`+(nx===-1
       ?`<button class="btn-primary press" data-act="finish"><span class="cta-t">Finish workout</span>${IC.flag}</button>`
-      :`<a class="btn-primary press" href="#/${key}/${nx}"><span class="cta-t">Continue: ${selectedProfile(key,nx).name}</span>${IC.chev}</a><button class="ghost press mt-s wide" data-act="finish">${IC.flag} Finish workout</button>`);
-  }else cta=`<a class="btn-primary press" href="#/${key}/${Math.max(0,nx)}" data-act="start"><span class="cta-t">Start workout</span>${IC.play}</a>`;
+      :`<a class="btn-primary press" href="#/${K(key)}/${nx}"><span class="cta-t">Continue: ${selectedProfile(key,nx).name}</span>${IC.chev}</a><button class="ghost press mt-s wide" data-act="finish">${IC.flag} Finish workout</button>`);
+  }else cta=`<a class="btn-primary press" href="#/${K(key)}/${Math.max(0,nx)}" data-act="start"><span class="cta-t">Start workout</span>${IC.play}</a>`;
   return `<p class="eyebrow">${eyebrow}</p><h1>${d.title}</h1><p class="sub">${d.focus}</p>
     <div class="stats"><div><b>${its.length}</b><span>Exercises</span></div><div><b>${p.total}</b><span>Sets</span></div><div><b>~${estMin(key)}</b><span>Minutes</span></div></div>
     <div class="prog"><div class="prog-bar"><i style="width:${p.total?p.done/p.total*100:0}%"></i></div><span class="prog-txt">${p.done} / ${p.total} sets</span></div>${cta}`;
@@ -898,7 +911,7 @@ function dayView(key){
     <div class="day-head">${headHTML(key)}</div>
     <div class="ex-list stagger">${list}</div>
     ${absApp}
-    <div class="day-foot"><a class="ghost press" href="#/${key}/rules">${IC.info} Rules</a><button class="ghost press" data-act="reset">${IC.refresh} Reset today</button></div>
+    <div class="day-foot"><a class="ghost press" href="#/${K(key)}/rules">${IC.info} Rules</a><button class="ghost press" data-act="reset">${IC.refresh} ${isEditing(key)?'Clear this day':'Reset today'}</button></div>
   </section>`;
 }
 function updateDay(key){
@@ -926,7 +939,7 @@ const METRIC={
 };
 function pnavInner(){const p=period(HV.range,HV.off);return `<button class="icon-btn" data-act="poff" data-d="-1" aria-label="Previous ${HV.range}">${IC.back}</button><div class="pnav-t" aria-live="polite"><span class="eyebrow">${p.eyebrow}</span><b>${p.label}</b></div><button class="icon-btn" data-act="poff" data-d="1" aria-label="Next ${HV.range}" ${HV.off>=0?'disabled':''}>${IC.chev}</button>`}
 function historyView(){
-  return `<section class="view hv"><div class="day-head hv-head"><p class="eyebrow">Your training</p><h1>History</h1></div>
+  return `<section class="view hv"><div class="day-head hv-head"><div><p class="eyebrow">Your training</p><h1>History</h1></div><a class="ghost sm-btn press hv-edit" href="#/history/pick">${IC.edit} Log / edit</a></div>
     <div class="seg" id="rangeSeg" style="--n:3;--v:${RANGES.indexOf(HV.range)}" role="tablist"><i class="pill"></i>${RANGES.map(r=>`<button data-act="range" data-v="${r}" class="${HV.range===r?'on':''}" role="tab" aria-controls="hvBody" aria-selected="${HV.range===r}">${r[0].toUpperCase()+r.slice(1)}</button>`).join('')}</div>
     <div class="pnav" id="pnav">${pnavInner()}</div>
     <div class="stagger" id="hvBody" role="tabpanel">${historyBody()}</div></section>`;
@@ -968,7 +981,7 @@ function calHTML(p){
     const di=iso(d),ws=byDate[di],plan=DAYS.find(x=>x.dow===d.getDay());let cls='cal-d';
     if(!ws&&plan){const set=dk[iso(satStart(d))];if(!(set&&set.has(plan.key)))cls+=di<t?' miss':' plan'}
     if(di===t)cls+=' today';
-    h+=ws?`<a class="${cls} done press" href="#/history/w/${esc(ws[ws.length-1].id)}" aria-label="${fmtDate(di)}, ${DAY[ws[0].day]?DAY[ws[0].day].title:'workout'}">${d.getDate()}</a>`:`<span class="${cls}">${d.getDate()}</span>`;
+    h+=ws?`<a class="${cls} done press" href="#/history/w/${esc(ws[ws.length-1].id)}" aria-label="${fmtDate(di)}, ${DAY[ws[0].day]?DAY[ws[0].day].title:'workout'}">${d.getDate()}</a>`:(plan&&di<t)?`<a class="${cls} press" href="#/${plan.key}~${di}" aria-label="${fmtDate(di)}, log ${plan.title}">${d.getDate()}</a>`:`<span class="${cls}">${d.getDate()}</span>`;
   }
   return `<div class="cal">${h}</div><div class="legend"><span><i class="lg"></i>Trained</span><span><i class="lg miss"></i>Missed</span><span><i class="lg plan"></i>Planned</span></div>`;
 }
@@ -1010,79 +1023,125 @@ function updateHistory(){
 /* ---------- Sheets ---------- */
 function histRows(list,ex){return list.map(e=>{const basis=e.item&&e.item.loadBasis&&LOAD_BASIS[e.item.loadBasis]?LOAD_BASIS[e.item.loadBasis].short:'';const note=e.item&&e.item.notes&&e.item.notes[e.variant]&&e.item.notes[e.variant].text;return `<div class="xh"><div class="xh-top"><span>${fmtDate(e.wk.date)} · ${relDays(e.wk.date)}</span>${basis?`<span class="load-basis-mini">${esc(basis)}</span>`:''}${e.pr?'<span class="pr">PR</span>':''}<em>${e.e1?(ex&&ex.timed?'Best '+r1(e.e1)+'s':'e1RM '+r1(e.e1)):''}</em></div><div class="set-chips">${e.sets.map(s=>`<span>${setTxt(s,ex)}</span>`).join('')}</div>${note?`<p class="xh-note" dir="auto">${esc(note)}</p>`:''}</div>`}).join('')}
 function exerciseNoteHistory(exId,variant,excludeId){return Object.values(Store.W).filter(w=>!w.deleted&&w.id!==excludeId).map(w=>{const item=w.items.find(it=>it.ex===exId&&itemVariant(it)===variant),n=item&&item.notes&&item.notes[variant];return n&&n.text?{date:w.date,text:n.text,at:n.at||0}:null}).filter(Boolean).sort((a,b)=>b.date.localeCompare(a.date)||(b.at-a.at)).slice(0,5)}
+/* Every saved note for an exercise (all equipment versions), newest first */
+function exerciseNotes(exId,excludeId){
+  const out=[];
+  Object.values(Store.W).forEach(w=>{if(w.deleted||w.id===excludeId)return;w.items.forEach(it=>{if(it.ex!==exId||!it.notes)return;
+    Object.keys(it.notes).forEach(v=>{const n=it.notes[v];if(n&&n.text)out.push({date:w.date,text:n.text,at:n.at||0,variant:v})})})});
+  return out.sort((a,b)=>b.date.localeCompare(a.date)||(b.at-a.at));
+}
+function variantSegHTML(exId,selected){
+  const vs=visibleVariants(exId,selected);if(vs.length<2)return '';
+  return `<div class="vseg" role="radiogroup" aria-label="Equipment">${vs.map(v=>`<button type="button" class="press${v===selected?' on':''}" role="radio" aria-checked="${v===selected}" data-act="variant" data-v="${v}">${VARIANT_META[v].short}</button>`).join('')}</div>`;
+}
 function exSheet(day,i,tab){
-  const d=DAY[day],it=d.items[i],sess=session(day,i),variant=itemVariant(sess),ex=variantProfile(it.ex,variant),comp=isComp(it);
-  const s=session(day,i),hist=exHistory(it.ex,todayId(day),variant),prev=hist[hist.length-1]||null;
-  const n=doneCount(day,i),allDone=n>=it.sets,meta=VARIANT_META[variant],basis=(s&&LOAD_BASIS[s.loadBasis]?s.loadBasis:preferredLoadBasis(it.ex,variant));
+  const d=DAY[day],it=d.items[i],s=session(day,i),variant=itemVariant(s),ex=variantProfile(it.ex,variant),comp=isComp(it),ed=isEditing(day),sd=activeDate(day);
+  const hist=exHistory(it.ex,todayId(day),variant).filter(e=>e.wk.date<=sd),prev=hist[hist.length-1]||null;
+  const n=doneCount(day,i),allDone=n>=it.sets,basis=(s&&LOAD_BASIS[s.loadBasis]?s.loadBasis:preferredLoadBasis(it.ex,variant));
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.yt);
   const topHit=prev&&prev.sets.length>=it.sets&&prev.sets.slice(0,it.sets).every(x=>num(x.r)>=it.reps[1]);
+  const mode=ex.loadMode||'external',kind=ex.neckSupport?'Endurance':comp?'Compound':'Isolation',effort=ex.neckSupport?'RPE 5–6':comp?'1–2 RIR':'0–1 RIR';
   let rows='',carry='';
   for(let j=0;j<it.sets;j++){
     const c=s&&s.sets[j]||{w:'',r:'',d:false},p=prev&&prev.sets[j]||{},pw=carry||p.w||'';
-    const mode=ex.loadMode||'external',weightLabel=mode==='assist'?'assistance':mode==='bodyweight'?'added weight':'weight';
+    const weightLabel=mode==='assist'?'assistance':mode==='bodyweight'?'added weight':'weight';
     rows+=`<div class="set-row${c.d?' done':''}"><span class="set-n">${j+1}</span>
       <label class="fld"><input type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" data-f="w" data-s="${j}" value="${esc(c.w)}" placeholder="${esc(pw||'–')}" data-p="${esc(pw)}" data-p0="${esc(p.w||'')}" aria-label="Set ${j+1} ${weightLabel}"><em>${S.unit}</em></label>
       <label class="fld"><input type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" data-f="r" data-s="${j}" value="${esc(c.r)}" placeholder="${esc(p.r||repsTxt(it))}" data-p="${esc(p.r||'')}" aria-label="Set ${j+1} ${ex.timed?'seconds':'reps'}"><em>${ex.timed?'sec':'reps'}</em></label>
       <button class="chk" data-act="check" data-s="${j}" aria-pressed="${c.d}" aria-label="Mark set ${j+1} done">${IC.check}</button></div>`;
     if(c.w)carry=c.w;
   }
-  const histHTML=hist.length?`<p class="h3 mt">Previous ${meta.short.toLowerCase()} sessions</p><div class="xh-list">${histRows(hist.slice(-3).reverse(),ex)}</div><a class="ghost press rest-btn" href="#/${day}/x/${it.ex}/${variant}">${IC.chart} Full history for this version</a>`:'';
-  const noteNow=s&&s.notes&&s.notes[variant]?s.notes[variant].text:'';const noteHint=noteSuggestion(it.ex,variant,basis);const noteHistory=exerciseNoteHistory(it.ex,variant,todayId(day));
-  const notesHTML=`<details class="ex-notes"><summary><span>Exercise note</span><small>${noteNow?'Saved for this session':noteHistory.length?`${noteHistory.length} past notes`:'Add / review notes'}</small></summary><div class="note-inner"><textarea id="exerciseNote" dir="auto" rows="2" maxlength="500" placeholder="Add a note for this exercise…">${esc(noteNow||noteHint)}</textarea><div class="note-actions"><button class="ghost sm-btn press" data-act="save-note">Save note</button><small id="noteStatus">${noteNow?'Saved note can be edited.':'Starter suggestion · edit it, then save to keep it in history.'}</small></div>${noteHistory.length?`<details class="note-history"><summary>Previous notes (${noteHistory.length})</summary><div class="note-history-list">${noteHistory.map(x=>`<div class="note-history-item"><time>${fmtDate(x.date)}</time><p dir="auto">${esc(x.text)}</p></div>`).join('')}</div></details>`:''}</div></details>`;
+  /* notes */
+  const noteNow=s&&s.notes&&s.notes[variant]?s.notes[variant].text:'',notes=exerciseNotes(it.ex,todayId(day)),lastNote=notes[0];
+  const noteCount=notes.length+(noteNow?1:0);
+  const coach=VARIANT_NOTE_HINTS[it.ex+':'+variant]||EXERCISE_NOTE_HINTS[it.ex]||'';
+  const noteItem=x=>`<div class="note-item"><time>${fmtLong(x.date)} · ${relDays(x.date)}${x.variant!=='primary'?` <span class="variant-mini ${x.variant}">${VARIANT_META[x.variant].short}</span>`:''}</time><p dir="auto">${esc(x.text)}</p></div>`;
+  /* log tab pieces */
+  const lastHTML=prev?`<div class="last"><span class="last-l">Last time · ${fmtLong(prev.wk.date)}</span><div class="set-chips">${prev.sets.map(x=>`<span>${setTxt(x,ex)}</span>`).join('')}</div></div>`
+    :`<p class="first-log">First time logging ${variant==='primary'?'this exercise':'this version'}.</p><p class="first-log fa-hint" dir="rtl">${LOAD_BASIS[basis].hint}</p>`;
+  const peek=lastNote?`<button class="note-peek press" data-act="tab" data-v="1">${IC.note}<span dir="auto">${esc(lastNote.text)}</span><small>${fmtDate(lastNote.date)}</small></button>`:'';
+  const modeTip=mode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight; leave it empty for bodyweight.</p>`:mode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight, or enter only the <b>added</b> weight.</p>`:'';
+  const basisSel=`<label class="wt-basis"><span id="basisTxt">${LOAD_BASIS[basis].short}</span>${IC.chev}<select id="loadBasis" aria-label="Weight recorded as">${Object.entries(LOAD_BASIS).map(([k,v])=>`<option value="${k}"${basis===k?' selected':''}>${v.label.split(' · ')[0]}</option>`).join('')}</select></label>`;
   const pv=i>0?`<button class="nav-btn press" data-act="nav" data-to="${i-1}">${IC.back}<span><small>Previous</small>${selectedProfile(day,i-1).name}</span></button>`:'<span></span>';
   const nx=i<d.items.length-1?`<button class="nav-btn nx press${allDone?' go':''}" data-act="nav" data-to="${i+1}"><span><small>Next</small>${selectedProfile(day,i+1).name}</span>${IC.chev}</button>`
     :`<button class="nav-btn nx press${allDone?' go':''}" data-act="close"><span><small>Last exercise</small>Back to workout</span>${IC.check}</button>`;
-  const variantNote=variant==='primary'?'Programmed movement':`${meta.label} · programmed slot: ${EX[it.ex].name}`;
-  return `<div class="sx${tab===0?' log':''}">
+  return `<div class="sx${tab!==2?' log':''}">
     <div class="media-wrap"><div class="media-in"><div class="media" id="media"><div class="media-ph">${IC.dumbbell}<span>Loading exercise image…</span></div><img class="frame" alt=""><img class="frame" alt=""><span class="media-tag">Start</span><button class="media-btn" aria-label="Pause animation"></button></div></div></div>
     <div class="sx-head">
-      <p class="eyebrow">Exercise ${i+1} of ${d.items.length} · ${ex.neckSupport?'Endurance accessory':comp?'Compound':'Isolation'}${it.ss?' · Superset '+it.ss:''}</p>
-      <div class="variant-context"><span class="variant-state ${variant}">${meta.short}</span><span>${variantNote}</span></div>
+      <p class="eyebrow">${i+1} / ${d.items.length} · ${kind}${it.ss?' · Superset '+it.ss:''}${ed?' · '+fmtDate(sd):''}</p>
       <h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}
-      <div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>
-      ${variantTabsHTML(it.ex,variant)}
-      <div class="specs">
-        <div class="spec"><span>Sets</span><b>${it.sets}</b></div>
-        <div class="spec"><span>${ex.timed?'Seconds':'Reps'}</span><b>${repsTxt(it)}${ex.timed?'s':''}${ex.side?'/side':''}</b></div>
-        <div class="spec"><span>Rest</span><b>${fmt(restFor(it))}</b></div>
-        <div class="spec"><span>${ex.neckSupport?'Effort':comp?'Effort':'Last set'}</span><b>${ex.neckSupport?'RPE 5–6':comp?'1–2 RIR':'0–1 RIR'}</b></div>
-      </div>
-      <div class="seg" style="--v:${tab}" role="tablist"><i class="pill"></i>
-        <button role="tab" id="tab0" aria-controls="pan0" data-act="tab" data-v="0" class="${tab===0?'on':''}" aria-selected="${tab===0}">Log sets <span class="cnt" id="logCnt">${n}/${it.sets}</span></button>
-        <button role="tab" id="tab1" aria-controls="pan1" data-act="tab" data-v="1" class="${tab===1?'on':''}" aria-selected="${tab===1}">Technique</button>
+      <p class="rx"><span><b>${it.sets}</b> sets</span><i></i><span><b>${repsTxt(it)}</b> ${ex.timed?'sec':'reps'}${ex.side?'/side':''}</span><i></i><span><b>${fmt(restFor(it))}</b> rest</span><i></i><span><b>${effort}</b></span></p>
+      ${variantSegHTML(it.ex,variant)}
+      <div class="seg" style="--n:3;--v:${tab}" role="tablist"><i class="pill"></i>
+        <button role="tab" id="tab0" aria-controls="pan0" data-act="tab" data-v="0" class="${tab===0?'on':''}" aria-selected="${tab===0}">Log <span class="cnt" id="logCnt">${n}/${it.sets}</span></button>
+        <button role="tab" id="tab1" aria-controls="pan1" data-act="tab" data-v="1" class="${tab===1?'on':''}" aria-selected="${tab===1}">Notes${noteCount?` <span class="cnt" id="noteCnt">${noteCount}</span>`:''}</button>
+        <button role="tab" id="tab2" aria-controls="pan2" data-act="tab" data-v="2" class="${tab===2?'on':''}" aria-selected="${tab===2}">Technique</button>
       </div>
     </div>
     <div class="sx-body">
       <div class="panel" id="pan0" role="tabpanel" aria-labelledby="tab0" ${tab===0?'':'hidden'}>
-        ${topHit?`<div class="hint">${IC.trend}<span>${ex.neckSupport?'You reached the top of the range. Keep it comfortable; progress slowly only if symptoms remain settled.':ex.loadMode==='assist'?'You hit the top of the rep range on every set last time. Take a little assistance off today.':'You hit the top of the rep range on every set last time. Increase the load slightly today.'}</span></div>`:''}
-        ${ex.loadMode==='assist'?`<p class="first-log">Enter the <b>assistance</b> weight. Leave it empty for bodyweight. Less assistance counts as progress.</p>`:ex.loadMode==='bodyweight'?`<p class="first-log">Leave weight empty for bodyweight. If you add external load, enter only the added weight.</p>`:''}
-        ${prev?'':`<p class="first-log">First time logging this version. Its numbers will be tracked separately from the other equipment options.</p>`}
-        <div class="load-basis-box">
-          <div class="load-basis-heading"><label for="loadBasis">Weight recorded as</label><span class="load-basis-caption">For this exercise</span></div>
-          <div class="basis-select-wrap"><select id="loadBasis" class="basis-select" aria-describedby="loadBasisHint">${Object.entries(LOAD_BASIS).map(([k,v])=>`<option value="${k}"${basis===k?' selected':''}>${v.label.split(' · ')[0]}</option>`).join('')}</select><span class="basis-select-arrow" aria-hidden="true">${IC.chev}</span></div>
-          <p class="basis-hint" id="loadBasisHint" dir="rtl">${LOAD_BASIS[basis].hint}</p>
-        </div>
-        <div class="set-head"><span>#</span><span>${ex.loadMode==='assist'?'Assist':ex.loadMode==='bodyweight'?'Added wt':'Weight'}<small class="weight-basis-head">${LOAD_BASIS[basis].short}</small></span><span>${ex.timed?'Seconds':'Reps'}</span><span></span></div>
+        ${topHit?`<div class="hint">${IC.trend}<span>${ex.neckSupport?'Top of the range last time. Progress slowly only if symptoms stay settled.':mode==='assist'?'Top of the rep range on every set last time. Take a little assistance off.':'Top of the rep range on every set last time. Add a little weight.'}</span></div>`:''}
+        ${lastHTML}${peek}${modeTip}
+        <div class="set-head"><span>#</span><span class="wt-h">${mode==='assist'?'Assist':mode==='bodyweight'?'Added':'Weight'}${basisSel}</span><span>${ex.timed?'Seconds':'Reps'}</span><span></span></div>
         ${rows}
-        ${notesHTML}
-        <button class="ghost press rest-btn" data-act="rest">${IC.clock} Start ${fmt(restFor(it))} rest timer</button>
-        ${histHTML}
+        <div class="ex-tools">${ed?'':`<button class="ghost press" data-act="rest">${IC.clock} Rest ${fmt(restFor(it))}</button>`}${hist.length?`<a class="ghost press" href="#/${K(day)}/x/${it.ex}/${variant}">${IC.chart} History</a>`:''}</div>
       </div>
       <div class="panel" id="pan1" role="tabpanel" aria-labelledby="tab1" ${tab===1?'':'hidden'}>
+        <label class="note-lbl" for="exerciseNote"><span>${ed?'Note for '+fmtLong(sd):'Today’s note'}</span><small id="noteStatus">${noteNow?'Saved':''}</small></label>
+        <textarea id="exerciseNote" class="note-ta" dir="auto" rows="3" maxlength="500" placeholder="Seat setting, grip, how it felt, what to change next time…">${esc(noteNow)}</textarea>
+        <p class="note-help">Saves automatically. Your notes show up here every time you open this exercise.</p>
+        ${notes.length?`<p class="h3 mt">Earlier notes</p><div class="note-list">${notes.map(noteItem).join('')}</div>`:''}
+      </div>
+      <div class="panel" id="pan2" role="tabpanel" aria-labelledby="tab2" ${tab===2?'':'hidden'}>
+        <div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>
         <a class="yt press" href="${yt}" target="_blank" rel="noopener"><span class="yt-ic">${IC.yt}</span>Watch ${ex.name} tutorial<span class="ext">${IC.ext}</span></a>
         ${ex.cue?`<div class="variant-cue">${IC.info}<span>${ex.cue}</span></div>`:''}
+        ${coach?`<div class="variant-cue">${IC.note}<span dir="rtl">${coach}</span></div>`:''}
+        <div class="variant-cue">${IC.dumbbell}<span><b>Weight recorded as ${LOAD_BASIS[basis].label.split(' · ')[0].toLowerCase()}.</b> <span dir="rtl">${LOAD_BASIS[basis].hint}</span></span></div>
         ${machineGuideHTML(ex)}
         <p class="h3 technique-h3">How to do it</p><ol class="steps">${ex.steps.map(x=>`<li><span>${x}</span></li>`).join('')}</ol>
         <p class="h3">Form tips</p><ul class="tips">${ex.tips.map(x=>`<li>${IC.check}<span>${x}</span></li>`).join('')}</ul>
-        <p class="note">${IC.info}<span>${ex.neckSupport?'For neck and shoulder endurance, use a light-to-moderate load, move slowly and stop well before failure. Stop if symptoms increase.':comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''}</span></p>
+        <p class="note">${IC.info}<span>${ex.neckSupport?'For neck and shoulder endurance, use a light-to-moderate load, move slowly and stop well before failure. Stop if symptoms increase.':comp?'Stop with 1–2 reps in reserve. Don\'t regularly take heavy compound lifts to complete failure.':'Earlier sets stop short of failure; only the last set can reach 0–1 reps in reserve.'}${it.ss?' Optional superset: alternate with the paired exercise to save time.':''} Equipment options are tracked separately in your history.</span></p>
       </div>
     </div>
     <div class="sx-nav">${pv}${nx}</div>
   </div>`;
 }
+/* Notes save on their own; the values are captured when typed so switching exercises can't misfile them */
+let noteQ=null,noteT=0;
+function queueNote(val){
+  if(!cur.sheet||cur.sheet.t!=='ex')return;
+  const{day,i}=ctx();noteQ={day,i,date:activeDate(day),val};
+  const st=$('#noteStatus',sbody);if(st)st.textContent='Saving…';
+  clearTimeout(noteT);noteT=setTimeout(flushNote,600);
+}
+function flushNote(){
+  clearTimeout(noteT);const q=noteQ;noteQ=null;if(!q)return;
+  const w=Store.ensure(q.day,q.date),item=w.items[q.i];if(!item)return;
+  const v=itemVariant(item),val=q.val.trim().slice(0,500),old=item.notes&&item.notes[v]?item.notes[v].text:'';
+  if(val!==old){item.notes=item.notes||{};if(val)item.notes[v]={text:val,at:Date.now()};else delete item.notes[v];Store.touch(w,true)}
+  const st=$('#noteStatus',sbody);if(st&&cur.sheet&&cur.sheet.t==='ex'&&cur.sheet.i===q.i)st.textContent=val?'Saved':'';
+}
+/* History → Log / edit a day */
+const PK={date:null};
+function pickBody(date){
+  const dt=parseISO(date),plan=DAYS.find(x=>x.dow===dt.getDay()),logged=new Set(Store.list().filter(w=>w.date===date).map(w=>w.day)),today=date===iso();
+  return `<p class="pick-day">${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}${today?' · Today':''}${plan?'':' · Rest day on the plan'}</p>
+    <p class="label">Choose the workout</p>
+    ${DAYS.map(d=>{const has=logged.has(d.key),pl=plan&&plan.key===d.key;
+      return `<a class="day-card press${has||pl?' is-today':''}" href="#/${today?d.key:d.key+'~'+date}"><span class="day-badge">${d.short}</span><span class="dc-main"><span class="dc-top"><span class="dc-title">${d.title}</span>${has?'<span class="pill">Logged</span>':pl?'<span class="pill dim">Planned</span>':''}</span><span class="dc-focus">${d.focus}</span><span class="dc-meta">${has?'Tap to edit the sets':'Tap to enter the sets'}</span></span>${IC.chev}</a>`}).join('')}`;
+}
+function pickSheet(){
+  const t=iso(),date=PK.date&&PK.date<=t?PK.date:iso(addDays(new Date(),-1));PK.date=date;
+  return `<div class="sx"><div class="sx-pad">
+    <p class="eyebrow">History</p><h2 class="sx-title">Log or edit a day</h2>
+    <label class="pick-date"><span>${IC.calendar} Date</span><input type="date" id="pickDate" max="${t}" value="${date}"></label>
+    <div id="pickBody">${pickBody(date)}</div>
+  </div></div>`;
+}
 function xSheet(exId,variant='primary'){
   variant=variantKey(variant);const ex=variantProfile(exId,variant),u=S.unit,h=exHistory(exId,null,variant).map(e=>Object.assign({},e));
-  const tabs=`<div class="history-variant-tabs">${visibleVariants(exId,variant).map(v=>{const p=variantProfile(exId,v),on=v===variant;return `<a class="history-variant press${on?' on':''}" href="#/${cur.base}/x/${exId}/${v}"><span>${VARIANT_META[v].short}</span><b>${p.name}</b></a>`}).join('')}</div>`;
+  const tabs=`<div class="history-variant-tabs">${visibleVariants(exId,variant).map(v=>{const p=variantProfile(exId,v),on=v===variant;return `<a class="history-variant press${on?' on':''}" href="#/${K(cur.base)}/x/${exId}/${v}"><span>${VARIANT_META[v].short}</span><b>${p.name}</b></a>`}).join('')}</div>`;
   const head=`<p class="eyebrow">Exercise history · ${VARIANT_META[variant].label}</p><h2 class="sx-title">${ex.name}</h2>${ex.fa?`<p class="sx-fa" dir="rtl">${ex.fa}</p>`:''}<div class="chips">${ex.muscles.map(m=>`<span class="chip">${m}</span>`).join('')}</div>${tabs}`;
   if(!h.length)return `<div class="sx"><div class="sx-pad">${head}<p class="first-log history-empty">No sets logged for this version yet. Choose another tab to see its separate history.</p></div></div>`;
   let best=0,heavy=null,run=0;
@@ -1107,7 +1166,7 @@ function wSheet(id){
   const st=wStats(w),d=DAY[w.day],dt=parseISO(w.date),u=S.unit,base=cur.base;
   const fresh=w.finishedAt&&Date.now()-w.finishedAt<10*60000;
   const ex=w.items.map((it,i)=>{const v=itemVariant(it),e=variantProfile(it.ex,v);if(!e)return'';const ds=it.sets.filter(s=>s.d),tag=v!=='primary'?`<span class="variant-mini ${v}">${VARIANT_META[v].short}</span>`:'';
-    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${base}/x/${it.ex}/${v}"><span>${e.name}</span>${tag}${IC.chev}</a>${e.fa?`<small class="wx-fa" dir="rtl">${e.fa}</small>`:''}<div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div>${ds.length&&it.loadBasis&&LOAD_BASIS[it.loadBasis]?`<small class="wx-basis">${esc(LOAD_BASIS[it.loadBasis].label)}</small>`:''}${it.notes&&it.notes[v]?`<small class="wx-note" dir="auto">${esc(it.notes[v].text)}</small>`:''}</div></div>`}).join('');
+    return `<div class="wx${ds.length?'':' skip'}"><span class="wx-n">${i+1}</span><div class="ex-main"><a class="wx-name" href="#/${K(base)}/x/${it.ex}/${v}"><span>${e.name}</span>${tag}${IC.chev}</a>${e.fa?`<small class="wx-fa" dir="rtl">${e.fa}</small>`:''}<div class="set-chips">${ds.length?ds.map(s=>`<span>${setTxt(s,e)}</span>`).join(''):'<small>Skipped</small>'}</div>${ds.length&&it.loadBasis&&LOAD_BASIS[it.loadBasis]?`<small class="wx-basis">${esc(LOAD_BASIS[it.loadBasis].label)}</small>`:''}${it.notes&&it.notes[v]?`<small class="wx-note" dir="auto">${esc(it.notes[v].text)}</small>`:''}</div></div>`}).join('');
   return `<div class="sx"><div class="sx-pad">
     <p class="eyebrow">${fresh?'Workout complete':dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p>
     <h2 class="sx-title">${d?d.title:'Workout'}</h2>
@@ -1123,7 +1182,7 @@ function wSheet(id){
     </div>
     <p class="h3 mt">Duration</p><p class="first-log">Forgot to tap Finish? Correct the duration here and calories update automatically.</p>
     <div class="dur-edit"><label class="fld"><input type="text" inputmode="numeric" id="durIn" value="${st.dur}" aria-label="Duration in minutes"><em>min</em></label><button class="ghost press" data-act="savedur" data-id="${esc(w.id)}">Save</button></div>
-    ${w.id===todayId(w.day)&&d&&base==='history'?`<a class="btn-secondary press mt" href="#/${w.day}">Open workout${IC.chev}</a>`:''}
+    ${d?`<a class="btn-secondary press mt" href="#/${w.date<iso()?w.day+'~'+w.date:w.day}"><span>${IC.edit} Edit sets</span>${IC.chev}</a>`:''}
     <button class="danger press mt" data-act="delw" data-id="${esc(w.id)}">${IC.trash} Delete workout</button>
   </div></div>`;
 }
@@ -1194,24 +1253,26 @@ function goUp(target,push){
 }
 function parse(h=H()){
   const seg=h.replace(/^#\/?/,'').split('/').filter(Boolean).map(s=>{try{return decodeURIComponent(s)}catch(e){return s}});
-  let base='home',rest=seg;
+  let base='home',rest=seg,date=null;
+  const em=/^([a-z]+)~(\d{4}-\d{2}-\d{2})$/.exec(seg[0]||'');
   if(seg[0]==='history'){base='history';rest=seg.slice(1)}
+  else if(em&&DAY[em[1]]){base=em[1];rest=seg.slice(1);if(em[2]<iso()&&!isNaN(parseISO(em[2])))date=em[2]}
   else if(seg[0]&&DAY[seg[0]]){base=seg[0];rest=seg.slice(1)}
   const x=rest[0];let sh=null;
-  if(x==='settings'||x==='rules')sh={t:x};
+  if(x==='settings'||x==='rules'||(x==='pick'&&base==='history'))sh={t:x};
   else if(x==='w'&&rest[1]&&Store.get(rest[1]))sh={t:'w',id:rest[1]};
   else if(x==='x'&&rest[1]&&EX[rest[1]])sh={t:'x',id:rest[1],variant:variantKey(rest[2])};
   else if(DAY[base]&&/^\d+$/.test(x||'')&&DAY[base].items[+x])sh={t:'ex',i:+x};
-  return{base,sheet:sh};
+  return{base,date,sheet:sh};
 }
-const basePath=b=>b==='home'?'#/':'#/'+b;
+const basePath=b=>b==='home'?'#/':'#/'+K(b);
 function renderBase(base,dir,prevBase){
   if(prevBase)scrollMem[prevBase]=scrollY;
   const isDay=!!DAY[base];
   app.innerHTML=base==='home'?homeView():base==='history'?historyView():dayView(base);
   app.firstElementChild.classList.add(dir);
   backBtn.hidden=!isDay;brand.hidden=isDay;
-  topTitle.textContent=isDay?`${DAY[base].day} · ${DAY[base].title}`:base==='history'?'History':'';
+  topTitle.textContent=isDay?(isEditing(base)?`${DAY[base].title} · ${fmtLong(EDIT.date)}`:`${DAY[base].day} · ${DAY[base].title}`):base==='history'?'History':'';
   document.title=isDay?`${DAY[base].title} · ${DAY[base].day}`:base==='history'?'History':'4-Day Program';
   $('#tabProg').classList.toggle('on',base!=='history');$('#tabHist').classList.toggle('on',base==='history');
   $('#tabProg').setAttribute('aria-current',base!=='history'?'page':'false');$('#tabHist').setAttribute('aria-current',base==='history'?'page':'false');
@@ -1231,21 +1292,23 @@ function restoreFocus(){
   if(el&&!sheet.contains(el)&&el.focus)el.focus({preventScroll:true});
 }
 function route(){
-  const r=parse(),prev=cur;cur={base:r.base,sheet:r.sheet};
-  if(r.base!==prev.base){const dep=b=>DAY[b]?1:0;renderBase(r.base,prev.base===null?'first':dep(r.base)>dep(prev.base)?'fwd':dep(r.base)<dep(prev.base)?'back':'first',prev.base)}
+  const r=parse(),prev=cur;cur={base:r.base,date:r.date,sheet:r.sheet};
+  EDIT=r.date&&DAY[r.base]?{day:r.base,date:r.date}:null;
+  if(r.base!==prev.base||r.date!==prev.date){const dep=b=>DAY[b]?1:0;renderBase(r.base,prev.base===null?'first':dep(r.base)>dep(prev.base)?'fwd':dep(r.base)<dep(prev.base)?'back':'first',prev.base)}
   if(r.sheet)return openSheet(r);
   if(sheetOpen){closeSheetUI();refreshBase()}
   else if(prev.sheet&&r.base===prev.base)refreshBase();
   restoreFocus();
 }
 function openSheet(r){
+  flushNote();
   const t=r.sheet.t,key=t==='ex'?`ex:${r.base}:${r.sheet.i}`:t==='x'?`x:${r.sheet.id}:${r.sheet.variant}`:t==='w'?`w:${r.sheet.id}`:t;
   if(sheetOpen&&key===sheetKey)return;
   const exSwap=sheetOpen&&t==='ex'&&(sheetKey||'').startsWith('ex:');
   const dir=exSwap?(r.sheet.i>+sheetKey.split(':')[2]?'fwd':'back'):(sheetOpen?'swap':'');
   if(t==='ex')curTab=0; // Open every exercise, including next/previous, on Log sets.
   stopMedia();
-  sbody.innerHTML=t==='ex'?exSheet(r.base,r.sheet.i,curTab):t==='settings'?settingsSheet():t==='rules'?rulesSheet():t==='w'?wSheet(r.sheet.id):xSheet(r.sheet.id,r.sheet.variant);
+  sbody.innerHTML=t==='ex'?exSheet(r.base,r.sheet.i,curTab):t==='settings'?settingsSheet():t==='rules'?rulesSheet():t==='pick'?pickSheet():t==='w'?wSheet(r.sheet.id):xSheet(r.sheet.id,r.sheet.variant);
   sbody.scrollTop=0;
   if(dir)sbody.firstElementChild.classList.add(dir);
   sheetKey=key;
@@ -1261,20 +1324,21 @@ function openSheet(r){
 }
 function closeSheetUI(){
   if(!sheetOpen)return;
+  flushNote();
   sheetOpen=false;sheetKey=null;stopMedia();
   if(document.activeElement&&sheet.contains(document.activeElement))document.activeElement.blur();
   root.classList.remove('open');root.setAttribute('aria-hidden','true');root.inert=true;document.body.classList.remove('lock');
   app.inert=false;topbar.inert=false;$('#tabbar').inert=false;
 }
 function requestClose(){closeSheetUI();goUp(basePath(cur.base))} // route() refreshes the base once the hash changes
-function navEx(j){replacing=true;location.replace(`#/${cur.base}/${j}`)}
+function navEx(j){replacing=true;location.replace(`#/${K(cur.base)}/${j}`)}
 
 /* ---------- Actions ---------- */
 function ctx(){const day=cur.base,i=cur.sheet.i;return{day,i,it:DAY[day].items[i]}}
 function setTab(v){
   curTab=v;
   const sx=$('.sx',sbody),seg=$('.seg',sbody);
-  sx.classList.toggle('log',v===0);seg.style.setProperty('--v',v);
+  sx.classList.toggle('log',v!==2);seg.style.setProperty('--v',v);
   $$('button',seg).forEach(b=>{const on=+b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
   $$('.panel',sbody).forEach((p,k)=>{p.hidden=k!==v;if(k===v){p.classList.remove('in');void p.offsetWidth;p.classList.add('in')}});
 }
@@ -1297,18 +1361,18 @@ async function finishWorkout(key){
   if(p.done<p.total&&!(await ask(`Finish with ${p.done} of ${p.total} sets done?`,'Finish')))return;
   if(!w.startedAt)w.startedAt=Date.now()-60000;
   w.finishedAt=Date.now();w.bw=S.bw;Store.touch(w,true);hideTimer();haptic([20,60,20]);
-  location.hash=`#/${key}/w/${w.id}`;
+  location.hash=`#/${K(key)}/w/${w.id}`;
 }
 function toggleSet(k,btn){
   const{day,i,it}=ctx(),w=Store.ensure(day),s=w.items[i],set=s.sets[k],row=btn.closest('.set-row'),variant=itemVariant(s),ex=variantProfile(it.ex,variant),src=`${w.id}:${i}:${k}`;
-  set.d=!set.d;set.t=set.d?Date.now():null;
+  const ed=isEditing(day);
+  set.d=!set.d;set.t=set.d&&!ed?Date.now():null;
   if(set.d){
     const wi=$('[data-f="w"]',row),ri=$('[data-f="r"]',row);
     if(!set.w&&wi.dataset.p){set.w=normNum(wi.dataset.p);wi.value=set.w}
     if(!set.r&&ri.dataset.p){set.r=normNum(ri.dataset.p);ri.value=set.r}
     if(set.w)propagateWeight(k,set.w);
-    if(!w.startedAt)w.startedAt=Date.now()-60000;
-    if(w.finishedAt)w.finishedAt=null;
+    if(!ed){if(!w.startedAt)w.startedAt=Date.now()-60000;if(w.finishedAt)w.finishedAt=null}
   }else if(!T.fired&&T.src===src)hideTimer(); // unticking cancels the rest it started
   Store.touch(w,true);
   row.classList.toggle('done',set.d);btn.setAttribute('aria-pressed',set.d);
@@ -1316,6 +1380,7 @@ function toggleSet(k,btn){
   $('#logCnt').textContent=`${n}/${it.sets}`;
   const nb=$('.nav-btn.nx',sbody);if(nb)nb.classList.toggle('go',all);
   updateDay(day);
+  if(set.d&&ed){haptic(12);if(all)toast(`${ex.name} done`);return}
   if(set.d){
     haptic(12);unlockAudio();
     const W=num(set.w),R=num(set.r),c1=ex.timed?R:e1(load(ex,set.w,w.bw),R);
@@ -1367,7 +1432,6 @@ root.addEventListener('click',async e=>{
   if(a==='sback')return history.back();
   if(a==='tab')return setTab(+el.dataset.v);
   if(a==='variant')return setVariant(el.dataset.v);
-  if(a==='save-note'){const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item),field=$('#exerciseNote',sbody),value=field?field.value.trim():'';item.notes=item.notes||{};if(value)item.notes[variant]={text:value,at:Date.now()};else delete item.notes[variant];Store.touch(w,true);const status=$('#noteStatus',sbody);if(status)status.textContent=value?'Saved to this exercise history.':'Note cleared.';const summary=$('.ex-notes summary small',sbody);if(summary)summary.textContent=value?'Saved for this session':'Add / review notes';toast(value?'Exercise note saved':'Exercise note cleared');return}
   if(a==='cache-images'){
     if(!navigator.onLine){toast('Connect to Wi-Fi or a stable network first.');return}
     if(!('serviceWorker' in navigator)){toast('Offline image saving is not supported here.');return}
@@ -1429,9 +1493,11 @@ root.addEventListener('click',async e=>{
 });
 root.addEventListener('change',e=>{
   if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value='';return}
-  if(e.target.id==='loadBasis'){const basis=e.target.value;if(!LOAD_BASIS[basis]||!cur.sheet||cur.sheet.t!=='ex')return;const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item);item.loadBasis=basis;S.loadBasis=S.loadBasis||{};S.loadBasis[it.ex+':'+variant]=basis;Store.saveS();Store.touch(w,true);const hint=$('.basis-hint',sbody);if(hint)hint.textContent=LOAD_BASIS[basis].hint;const basisHead=$('.weight-basis-head',sbody);if(basisHead)basisHead.textContent=LOAD_BASIS[basis].short;toast('Weight entry method saved for this exercise');}
+  if(e.target.id==='pickDate'){let v=e.target.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return;if(v>iso()){v=iso();e.target.value=v}PK.date=v;$('#pickBody',sbody).innerHTML=pickBody(v);return}
+  if(e.target.id==='loadBasis'){const basis=e.target.value;if(!LOAD_BASIS[basis]||!cur.sheet||cur.sheet.t!=='ex')return;const{day,i,it}=ctx(),w=Store.ensure(day),item=w.items[i],variant=itemVariant(item);item.loadBasis=basis;S.loadBasis=S.loadBasis||{};S.loadBasis[it.ex+':'+variant]=basis;Store.saveS();Store.touch(w,true);const hint=$('.basis-hint',sbody);if(hint)hint.textContent=LOAD_BASIS[basis].hint;const basisHead=$('#basisTxt',sbody);if(basisHead)basisHead.textContent=LOAD_BASIS[basis].short;toast('Weight entry method saved for this exercise');}
 });
 root.addEventListener('input',e=>{
+  if(e.target.id==='exerciseNote'){queueNote(e.target.value);return}
   const f=e.target.dataset.f;if(!f||!cur.sheet||cur.sheet.t!=='ex')return;
   const{day,i}=ctx(),w=Store.ensure(day),k=+e.target.dataset.s;
   const val=normNum(e.target.value.trim()).slice(0,f==='w'?7:4);
@@ -1458,18 +1524,20 @@ app.addEventListener('click',e=>{
   const key=cur.base,a=el.dataset.act;
   if(a==='abs'){
     const w=Store.ensure(key);w.abs=!w.abs;
-    if(w.abs&&!w.startedAt)w.startedAt=Date.now()-CONFIG.absMinutes*60000;
+    if(w.abs&&!w.startedAt&&!isEditing(key))w.startedAt=Date.now()-CONFIG.absMinutes*60000;
     Store.touch(w,true);updateDay(key);
-    if(w.abs){haptic(12);checkComplete(key)}
+    if(w.abs){haptic(12);if(!isEditing(key))checkComplete(key)}
   }
   if(a==='finish')finishWorkout(key);
+  if(a==='save-edit'){Store.flush();const w=todayW(key);toast(w&&hasRecordData(w)?`Saved · ${DAY[key].title}, ${fmtDate(EDIT.date)}`:'Nothing logged for this day');goUp('#/history',true)}
   if(a==='reset'){
     const w=todayW(key);
-    if(!w){toast('Nothing logged today');return}
-    ask(`Clear today's log for ${DAY[key].title}?`,'Clear',true).then(ok=>{
+    const ed=isEditing(key);
+    if(!w){toast(ed?'Nothing logged for this day':'Nothing logged today');return}
+    ask(ed?`Clear everything logged for ${DAY[key].title} on ${fmtDate(EDIT.date)}?`:`Clear today's log for ${DAY[key].title}?`,'Clear',true).then(ok=>{
       if(!ok)return;
       if(!T.fired&&T.src&&T.src.startsWith(w.id+':'))hideTimer();
-      Store.remove(w.id);updateDay(key);toast("Today's log cleared");
+      Store.remove(w.id);updateDay(key);toast(ed?'Day cleared':"Today's log cleared");
     });
   }
   if(a==='range'){HV.range=el.dataset.v;HV.off=0;HV.sel=null;updateHistory()}
@@ -1495,7 +1563,7 @@ document.addEventListener('click',e=>{
 });
 
 backBtn.addEventListener('click',()=>{if(stack.length>1)history.back();else{replacing=true;location.replace('#/')}});
-$('#settingsBtn').addEventListener('click',()=>{location.hash=cur.base==='home'?'#/settings':cur.base==='history'?'#/history/settings':`#/${cur.base}/settings`});
+$('#settingsBtn').addEventListener('click',()=>{location.hash=cur.base==='home'?'#/settings':cur.base==='history'?'#/history/settings':`#/${K(cur.base)}/settings`});
 
 function onScroll(){topbar.classList.toggle('scrolled',scrollY>60)}
 addEventListener('scroll',onScroll,{passive:true});
@@ -1515,7 +1583,7 @@ addEventListener('keydown',e=>{
 /* Swipe down to close (mobile) */
 let drag=null;
 sheet.addEventListener('touchstart',e=>{
-  if(innerWidth>=720||e.target.closest('input,.sx-nav'))return;
+  if(innerWidth>=720||e.target.closest('input,textarea,select,.sx-nav'))return;
   if(sbody.scrollTop>0&&!e.target.closest('.grab'))return;
   drag={y:e.touches[0].clientY,dy:0,t:Date.now()};
 },{passive:true});
