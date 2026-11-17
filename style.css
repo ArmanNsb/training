@@ -627,3 +627,6 @@ body.lock .timer{bottom:calc(92px + var(--sb))}
 #pan2 .chips{margin-bottom:14px}
 #pan2 .variant-cue svg{color:var(--ac)}
 .fa-hint{text-align:right;margin-top:-6px}
+/* v17: exercise image stays visible on every tab */
+.sx.log .media-wrap{grid-template-rows:1fr;opacity:1}
+.sx.log .sx-head{padding-top:18px}
